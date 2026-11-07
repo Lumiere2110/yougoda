@@ -173,6 +173,51 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .hist .ng .w{color:var(--muted)}
 .actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 .actions .hint{margin:0}
+/* ランキング */
+.rankbox{border:1.5px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.rankbox h4{margin:0}
+.rk2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media (max-width:640px){.rk2{grid-template-columns:1fr}}
+.rk2 h5{margin:0 0 6px;font-size:13px;display:flex;gap:8px;align-items:baseline}
+.rk2 h5 small{font-weight:400;color:var(--muted);font-size:11.5px}
+.rk{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.rk li{display:grid;grid-template-columns:2.2em minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:5px 2px;border-bottom:1px dashed var(--line);font-size:14px}
+.rk li .no{font-family:var(--f-mono);color:var(--muted);text-align:right}
+.rk li:nth-child(-n+3) .no{color:var(--red);font-weight:700}
+.rk li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk li .nm small{color:var(--muted);font-size:11px;margin-left:6px}
+.rk li .sc{font-family:var(--f-mono);font-weight:700}
+.rk li.me{background:var(--marker)}
+.rkmsg{font-size:13px;color:var(--muted);margin:0}
+.rkmsg b{color:var(--red);font-family:var(--f-hand);font-size:18px}
+.namebox{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
+.namebox input{font:inherit;font-size:15px;padding:6px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);width:12em;max-width:100%}
+.namebox input:focus{border-color:var(--accent);outline:none}
+.namebox .start{font-size:14px;padding:8px 14px;letter-spacing:.04em}
+/* 日ごとの記録 */
+.days{display:flex;flex-direction:column;gap:18px;grid-column:1/-1}
+.chart{position:relative}
+.chart h5{margin:0 0 4px;font-size:13px}
+.chart h5 small{font-weight:400;color:var(--muted);font-size:11.5px;margin-left:6px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .axis{fill:var(--muted);font-size:10px;font-family:var(--f-mono)}
+.chart .ln{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .dot{fill:var(--accent);stroke:var(--surface);stroke-width:2}
+.chart .lbl{fill:var(--ink);font-size:11px;font-family:var(--f-mono);font-weight:700}
+.chart .xh{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+.chart .tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font-size:12px;padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-110%)}
+.dtable{width:100%;border-collapse:collapse;font-size:13px}
+.dtable th{text-align:left;font-size:11.5px;color:var(--muted);font-weight:700;border-bottom:1.5px solid var(--ink);padding:4px 6px}
+.dtable td{border-bottom:1px dashed var(--line);padding:5px 6px;font-family:var(--f-mono)}
+.dtable td:first-child{font-family:var(--f-body)}
+.dtable .new{color:var(--red);font-family:var(--f-hand)}
+.dwrap{max-height:320px;overflow:auto}
+.daystat{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0;border-top:1.5px solid var(--line);margin:0}
+.daystat>div{padding:8px 4px;border-bottom:1.5px solid var(--line)}
+.daystat dt{font-size:12px;color:var(--muted);font-weight:700}
+.daystat dd{margin:0;font-family:var(--f-mono);font-size:20px}
+.daystat dd small{font-size:12px;color:var(--muted);font-family:var(--f-body);margin-left:4px}
 /* 検定テスト */
 .testbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px;border-color:var(--ink)}
 .testbtn b{font-size:15px}
@@ -285,6 +330,7 @@ body.osk-on{padding-bottom:260px}
   <header class="top">
     <div class="logo"><span class="logo-k">用語打</span><span class="logo-r">yougo-da</span></div>
     <p class="tag">学術用語・日常の言葉・英語で鍛えるタイピング練習アプリ。AIコーチが苦手なキー・文字・問題を記録して、あなた専用の練習問題を作ります。</p>
+    <button id="rankBtn" class="ghost" type="button">ランキング</button>
     <button id="coachBtn" class="ghost" type="button">AIコーチ</button>
     <button id="soundBtn" class="ghost" type="button">効果音: ON</button>
   </header>
@@ -383,6 +429,7 @@ body.osk-on{padding-bottom:260px}
         <div><h4>出題された問題</h4><ul class="hist" id="rHist"></ul></div>
       </div>
       <div class="coach-msg" id="rCoach"></div>
+      <div class="rankbox" id="rRank"></div>
       <div class="actions">
         <button id="retryBtn" class="start" type="button">もう一度</button>
         <button id="drillNow" class="ghost" type="button">AIの練習問題で復習</button>
@@ -390,6 +437,17 @@ body.osk-on{padding-bottom:260px}
         <button id="backBtn" class="ghost" type="button">設定に戻る</button>
         <p class="hint">Enter でもう一度 / Esc で設定へ</p>
       </div>
+    </div>
+  </section>
+
+  <section id="scr-rank" hidden>
+    <div class="sheet">
+      <div class="sheet-head"><span class="ttl">ランキング</span><span id="kLabel"></span></div>
+      <div class="seg" id="kKind"></div>
+      <p class="hint" id="kHint"></p>
+      <div class="rk2" id="kLists"></div>
+      <div class="namebox"><label for="kName">あなたの名前</label><input id="kName" maxlength="12" placeholder="名無し" autocomplete="nickname"></div>
+      <div class="actions"><button id="kBack" class="ghost" type="button">設定に戻る</button><button id="kReset" class="danger" type="button">この端末の記録を消す</button></div>
     </div>
   </section>
 
@@ -833,7 +891,7 @@ const SHOWS=[{k:'hira',label:'ひらがな（ふりがな）'},{k:'kanji',label:
 const RANKS=[{min:4.5,r:'S',t:'教授級'},{min:3.5,r:'A',t:'准教授級'},{min:2.6,r:'B',t:'研究員級'},{min:1.7,r:'C',t:'院生級'},{min:0,r:'D',t:'学部生級'}];
 
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
-const S=Object.assign({stage:'math',cats:null,level:1,minutes:1,limit:'normal',custom:.5,mode:'normal',show:{hira:true,kanji:true,kata:false,roma:true},sound:true,input:'roma'},store.get('yougoda-settings',{}));
+const S=Object.assign({stage:'math',cats:null,level:1,minutes:1,limit:'normal',custom:.5,mode:'normal',show:{hira:true,kanji:true,kata:false,roma:true},sound:true,input:'roma',name:''},store.get('yougoda-settings',{}));
 const stageOf=id=>STAGES.find(s=>s.id===id)||STAGES[0];
 if(!Array.isArray(S.cats)||!S.cats.length) S.cats=stageOf(S.stage).cats.map(c=>c.id);
 const save=()=>store.set('yougoda-settings',S);
@@ -935,7 +993,7 @@ const sfx={key:()=>tone(1400,.03,'triangle',.025),miss:()=>tone(130,.14,'sawtoot
 
 /* ===================== ゲーム本体 ===================== */
 let G=null, screen='setup';
-function showScreen(s){screen=s;['setup','play','result','coach','test'].forEach(n=>$('scr-'+n).hidden=n!==s);
+function showScreen(s){screen=s;['setup','play','result','coach','test','rank'].forEach(n=>$('scr-'+n).hidden=n!==s);
  document.body.classList.toggle('playing',s==='play');applyOSK();window.scrollTo(0,0);}
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -1135,6 +1193,7 @@ function finish(gameover){
  const raw=performance.now()-G.t0, elapsed=(G.dur?Math.min(G.dur,raw):raw)/1000;
  stopTimers();G.done=true;G.gameover=gameover;G.elapsed=Math.max(elapsed,.001);
  const tot=G.correct+G.miss;
+ if(tot>0&&!G.test) recordDay({kps:G.correct/G.elapsed,acc:G.correct/tot,keys:G.correct});
  if(tot>0){LD.sessions.push({t:Date.now(),kps:+(G.correct/G.elapsed).toFixed(2),acc:+(G.correct/tot).toFixed(3),sc:G.score,p:G.prac});LD.sessions=LD.sessions.slice(-60);saveLearn();}
  sfx.end();
  if(G.test) testSectionDone(); else showResult();
@@ -1223,12 +1282,217 @@ function showTestResult(){
   }
  }
  $('rCoach').innerHTML='<div class="who">判定</div>'+out.map(t=>`<p>${esc(t)}</p>`).join('');
+ if(correct+miss>0) recordDay({test:total,keys:correct});
+ rankAfter({test:true,stage:T.stage},{score:total,kps:secs?correct/secs:0,acc:correct+miss?correct/(correct+miss):0});
  T=null;
  showScreen('result');
 }
 $('testBtn').onclick=()=>startTest();
 $('tNext').onclick=()=>nextTestSection();
 $('tQuit').onclick=()=>{T=null;showScreen('setup');renderSetup();};
+
+/* ===================== 日ごとの記録 ===================== */
+// LD.days[YYYY-MM-DD] = {kps 最高速度, acc その時の正確率, test 検定テスト最高点, plays 回数, keys 正しく打った数}
+const dayKey=t=>{const d=new Date(t);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+function ensureDays(){
+ if(LD.days) return;
+ LD.days={};
+ (LD.sessions||[]).forEach(x=>{const d=LD.days[dayKey(x.t)]||(LD.days[dayKey(x.t)]={kps:0,acc:0,test:null,plays:0,keys:0});d.plays++;if(x.kps>d.kps){d.kps=x.kps;d.acc=x.acc;}});
+}
+let dayNews=[];
+function recordDay(r){
+ ensureDays();
+ const k=dayKey(Date.now()), d=LD.days[k]||(LD.days[k]={kps:0,acc:0,test:null,plays:0,keys:0});
+ const prevAll=Object.entries(LD.days).filter(([x])=>x!==k).map(([,v])=>v);
+ dayNews=[];
+ d.plays++;d.keys+=r.keys||0;
+ if(r.kps!=null&&r.kps>d.kps){
+  d.kps=+r.kps.toFixed(2);d.acc=+r.acc.toFixed(3);dayNews.push('今日の最高速度を更新');
+  if(prevAll.length&&prevAll.every(v=>d.kps>v.kps)) dayNews.push('これまでの最高速度を更新！');
+ }
+ if(r.test!=null&&(d.test==null||r.test>d.test)){
+  d.test=r.test;dayNews.push('今日の検定テスト最高点を更新');
+  if(prevAll.some(v=>v.test!=null)&&prevAll.every(v=>v.test==null||d.test>v.test)) dayNews.push('検定テストの自己最高点！');
+ }
+ saveLearn();
+}
+function lineChart(id,title,unit,pts,dec){
+ // pts: [{d:'YYYY-MM-DD', y:number}] 古い順
+ const W=640,H=180,L=34,R=40,Tp=14,B=24;
+ if(!pts.length) return `<div class="chart"><h5>${title}</h5><p class="rkmsg">まだ記録がありません。</p></div>`;
+ const ys=pts.map(p=>p.y), max=Math.max(...ys), min=Math.min(...ys);
+ let lo=Math.max(0,Math.floor((min-(max-min)*.2||min*.8))), hi=Math.ceil(max+(max-min)*.15||max*1.2||1);
+ if(hi<=lo) hi=lo+1;
+ const t0=+new Date(pts[0].d), t1=+new Date(pts[pts.length-1].d), span=t1-t0||1;
+ const X=p=>pts.length===1?L+(W-L-R)/2:L+(+new Date(p.d)-t0)/span*(W-L-R), Y=v=>Tp+(1-(v-lo)/(hi-lo))*(H-Tp-B);
+ const ticks=[lo,(lo+hi)/2,hi];
+ const md=s=>s.slice(5).replace('-','/');
+ const last=pts[pts.length-1];
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}の推移">`;
+ svg+=ticks.map(v=>`<line class="grid" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="axis" x="${L-6}" y="${Y(v)+3}" text-anchor="end">${(+v).toFixed(dec?1:0)}</text>`).join('');
+ svg+=`<text class="axis" x="${L}" y="${H-6}">${md(pts[0].d)}</text>`+(pts.length>1?`<text class="axis" x="${W-R}" y="${H-6}" text-anchor="end">${md(last.d)}</text>`:'');
+ if(pts.length>1) svg+=`<polyline class="ln" points="${pts.map(p=>X(p)+','+Y(p.y)).join(' ')}"/>`;
+ svg+=pts.map(p=>`<circle class="dot" cx="${X(p)}" cy="${Y(p.y)}" r="${pts.length>40?3:4.5}"/>`).join('');
+ svg+=`<text class="lbl" x="${X(last)+8}" y="${Y(last.y)+4}">${last.y.toFixed(dec)}</text>`;
+ svg+=`<line class="xh" id="${id}-xh" x1="0" x2="0" y1="${Tp}" y2="${H-B}" visibility="hidden"/>`;
+ svg+=`<rect x="${L-10}" y="0" width="${W-L-R+20}" height="${H}" fill="transparent" data-chart="${id}"/></svg>`;
+ return `<div class="chart" id="${id}" data-pts='${JSON.stringify(pts.map(p=>[p.d,p.y,X(p)]))}' data-unit="${unit}" data-dec="${dec}" data-w="${W}"><h5>${title}<small>日ごとの最高</small></h5>${svg}<div class="tip" hidden></div></div>`;
+}
+function bindChart(node){
+ node.querySelectorAll('.chart[data-pts]').forEach(c=>{
+  const pts=JSON.parse(c.dataset.pts), svg=c.querySelector('svg'), tip=c.querySelector('.tip'), xh=c.querySelector('.xh'), W=+c.dataset.w, dec=+c.dataset.dec;
+  const move=e=>{
+   const r=svg.getBoundingClientRect(), x=(e.clientX-r.left)/r.width*W;
+   let best=pts[0];pts.forEach(p=>{if(Math.abs(p[2]-x)<Math.abs(best[2]-x))best=p;});
+   xh.setAttribute('x1',best[2]);xh.setAttribute('x2',best[2]);xh.setAttribute('visibility','visible');
+   tip.hidden=false;tip.textContent=`${best[0].replace(/-/g,'/')}　${(+best[1]).toFixed(dec)} ${c.dataset.unit}`;
+   tip.style.left=(best[2]/W*r.width)+'px';tip.style.top=(e.clientY-r.top)+'px';
+  };
+  const leave=()=>{tip.hidden=true;xh.setAttribute('visibility','hidden');};
+  svg.addEventListener('pointermove',move);svg.addEventListener('pointerdown',move);svg.addEventListener('pointerleave',leave);
+ });
+}
+function renderDays(node){
+ ensureDays();
+ const ents=Object.entries(LD.days||{}).sort((a,b)=>a[0]<b[0]?-1:1);
+ if(!ents.length){node.innerHTML='<div class="days"><p class="rkmsg">まだ記録がありません。1回プレイすると、その日の最高記録がここに残ります。</p></div>';return;}
+ const sp=ents.filter(([,v])=>v.kps>0).map(([d,v])=>({d,y:v.kps}));
+ const tp=ents.filter(([,v])=>v.test!=null).map(([d,v])=>({d,y:v.test}));
+ const first=sp[0], best=sp.reduce((a,b)=>b.y>a.y?b:a,sp[0]||{y:0});
+ const recent=sp.slice(-7), avg=a=>a.reduce((s,x)=>s+x.y,0)/a.length;
+ const totalKeys=ents.reduce((a,[,v])=>a+(v.keys||0),0);
+ const st=[['記録した日数',ents.length,'日'],['最高速度',best?best.y.toFixed(2):'—',`打/秒${best&&best.d?'（'+best.d.slice(5).replace('-','/')+'）':''}`],
+  ['はじめの日',first?first.y.toFixed(2):'—','打/秒'],['最近7日の平均',recent.length?avg(recent).toFixed(2):'—','打/秒'],
+  ['検定テスト最高',tp.length?Math.max(...tp.map(x=>x.y)).toFixed(1):'—','点'],['これまでに打った数',totalKeys.toLocaleString(),'打']];
+ let html='<div class="days">';
+ html+=`<dl class="daystat">${st.map(s=>`<div><dt>${s[0]}</dt><dd>${s[1]}<small>${s[2]}</small></dd></div>`).join('')}</dl>`;
+ if(first&&sp.length>1){const g=best.y-first.y;html+=`<p class="rkmsg">はじめの日（${first.d.replace(/-/g,'/')}）と比べて、最高速度は <b>${g>=0?'+':''}${g.toFixed(2)}</b> 打/秒${g>0?'。着実に上達しています！':'。'}</p>`;}
+ html+=lineChart('ch-kps','最高速度（打/秒）','打/秒',sp,2);
+ html+=lineChart('ch-test','検定テストの最高点','点',tp,1);
+ // 表（新しい順）
+ let bestSoFar=0;const isNew={};ents.forEach(([d,v])=>{if(v.kps>bestSoFar){if(bestSoFar>0)isNew[d]=true;bestSoFar=v.kps;}});
+ html+=`<div><h5 style="margin:0 0 6px;font-size:13px">日ごとの最高記録</h5><div class="dwrap"><table class="dtable"><thead><tr><th>日付</th><th>最高速度</th><th>正確率</th><th>検定</th><th>回数</th><th>打った数</th></tr></thead><tbody>`+
+  ents.slice().reverse().map(([d,v])=>`<tr><td>${d.replace(/-/g,'/')}${isNew[d]?' <span class="new">新記録</span>':''}</td><td>${v.kps?v.kps.toFixed(2):'—'}</td><td>${v.kps?(v.acc*100).toFixed(1)+'%':'—'}</td><td>${v.test!=null?v.test.toFixed(1):'—'}</td><td>${v.plays}</td><td>${(v.keys||0).toLocaleString()}</td></tr>`).join('')+
+  '</tbody></table></div></div></div>';
+ node.innerHTML=html;
+ bindChart(node);
+}
+
+/* ===================== ランキング ===================== */
+// この端末のランキングは localStorage に条件ごとの上位10件を保存する。
+// みんなのランキングは Firebase（Cloud Firestore）を REST で使う。下の2つを入れると有効になる（設定方法は README）。
+const RANKING_CONFIG={projectId:'',apiKey:''};
+const MAX_KPS=20;   // これを超える速度は機械的な入力とみなしてオンライン登録しない（Firestore のルールでも同じ上限）
+const online=()=>!!(RANKING_CONFIG.projectId&&RANKING_CONFIG.apiKey);
+const boardOf=c=>c.test?`test-${c.stage}`:`play-${c.stage}-l${c.level}-m${c.minutes}-${c.limit}-${c.mode}-${c.input||'roma'}`;
+function boardLabel(c){
+ if(c.test) return `検定テスト · ${stageOf(c.stage).name}`;
+ const L=LIMITS.find(l=>l.v===c.limit);
+ return `${stageOf(c.stage).name} · Lv.${c.level} · ${c.minutes}分 · 制限${L?L.label:''} · ${MODES.find(m=>m.v===c.mode).name} · ${c.input==='kana'?'かな':'ローマ字'}`;
+}
+const cleanName=n=>(String(n||'').replace(/[\u0000-\u001f]/g,'').trim().slice(0,12))||'名無し';
+const LRK='yougoda-rank:';
+const localBoard=b=>store.get(LRK+b,[]);
+function addLocal(b,e){
+ const a=localBoard(b);a.push(e);a.sort((x,y)=>y.score-x.score||x.t-y.t);
+ const top=a.slice(0,10);store.set(LRK+b,top);
+ const i=top.findIndex(x=>x.t===e.t);return i<0?null:i+1;
+}
+function renameLocal(b,t,name){const a=localBoard(b);const x=a.find(x=>x.t===t);if(x){x.name=name;store.set(LRK+b,a);}}
+const fmtScore=(v,test)=>test?(+v).toFixed(1):String(Math.round(v));
+function rankList(arr,test,meT){
+ if(!arr.length) return '<p class="rkmsg">まだ記録がありません。</p>';
+ return '<ol class="rk">'+arr.map((x,i)=>`<li class="${x.t===meT?'me':''}"><span class="no">${i+1}</span><span class="nm">${esc(x.name)}<small>${(+x.kps||0).toFixed(1)}打/秒 · ${((+x.acc||0)*100).toFixed(0)}% · ${new Date(+x.t).toLocaleDateString('ja-JP')}</small></span><span class="sc">${fmtScore(x.score,test)}${test?'点':''}</span></li>`).join('')+'</ol>';
+}
+// --- Firestore REST
+const fsBase=()=>`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(RANKING_CONFIG.projectId)}/databases/(default)/documents`;
+const fsNum=v=>v?+(v.doubleValue??v.integerValue??0):0;
+async function onlineTop(b,n){
+ const r=await fetch(`${fsBase()}/boards/${encodeURIComponent(b)}:runQuery?key=${encodeURIComponent(RANKING_CONFIG.apiKey)}`,{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({structuredQuery:{from:[{collectionId:'scores'}],orderBy:[{field:{fieldPath:'score'},direction:'DESCENDING'}],limit:n}})});
+ if(!r.ok) throw new Error('HTTP '+r.status);
+ const j=await r.json();
+ return j.filter(x=>x.document).map(x=>{const f=x.document.fields||{};return {name:f.name?f.name.stringValue:'?',score:fsNum(f.score),kps:fsNum(f.kps),acc:fsNum(f.acc),t:fsNum(f.t)};});
+}
+async function onlinePost(b,e){
+ const r=await fetch(`${fsBase()}/boards/${encodeURIComponent(b)}/scores?key=${encodeURIComponent(RANKING_CONFIG.apiKey)}`,{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({fields:{name:{stringValue:e.name},score:{doubleValue:e.score},kps:{doubleValue:+e.kps.toFixed(2)},acc:{doubleValue:+e.acc.toFixed(4)},t:{integerValue:String(e.t)}}})});
+ if(!r.ok) throw new Error('HTTP '+r.status);
+}
+async function fillOnline(node,b,test,meT){
+ if(!online()){node.innerHTML='<p class="rkmsg">オンラインランキングはまだ設定されていません（サイト管理者が Firebase を設定すると使えるようになります）。</p>';return;}
+ node.innerHTML='<p class="rkmsg">読み込み中…</p>';
+ try{const a=await onlineTop(b,20);node.innerHTML=rankList(a,test,meT);}
+ catch(err){node.innerHTML=`<p class="rkmsg">読み込めませんでした（${esc(err.message)}）。</p>`;}
+}
+// --- 結果画面のランキング
+let RK=null;
+function rankAfter(cfg,res){
+ const test=!!cfg.test, b=boardOf(cfg);
+ const e={name:cleanName(S.name),score:test?res.score:Math.round(res.score),kps:res.kps||0,acc:res.acc||0,t:Date.now()};
+ const pos=e.score>0?addLocal(b,e):null;
+ RK={b,cfg,test,e,posted:false};
+ const box=$('rRank');box.hidden=false;
+ box.innerHTML=`<h4>ランキング <small class="hint">${esc(boardLabel(cfg))}</small></h4>
+  ${dayNews.length?`<p class="rkmsg"><b>${esc(dayNews[dayNews.length-1])}</b>（日ごとの記録はランキング画面で見られます）</p>`:''}
+  <p class="rkmsg">${e.score<=0?'0点のため記録していません。':pos?`この端末で <b>${pos}位</b> に入りました！`:'この端末のトップ10には入りませんでした。'}</p>
+  <div class="rk2"><div><h5>この端末<small>上位10件</small></h5><div id="rLocal"></div></div><div><h5>みんな<small>オンライン上位20件</small></h5><div id="rOnline"></div></div></div>
+  <div class="namebox"><label for="rName">名前</label><input id="rName" maxlength="12" placeholder="名無し" autocomplete="nickname">
+   ${online()&&e.score>0?(e.kps<=MAX_KPS?'<button id="rPost" class="start" type="button">みんなのランキングに登録</button>':'<span class="rkmsg">速度が人の限界（毎秒20打）を超えているため、みんなのランキングには登録できません。</span>'):''}<span class="rkmsg" id="rPostMsg"></span></div>`;
+ $('rLocal').innerHTML=rankList(localBoard(b),test,e.t);
+ $('rName').value=S.name||'';
+ $('rName').oninput=ev=>{S.name=ev.target.value;save();e.name=cleanName(S.name);if(pos){renameLocal(b,e.t,e.name);$('rLocal').innerHTML=rankList(localBoard(b),test,e.t);}};
+ if($('rPost')) $('rPost').onclick=postRK;
+ fillOnline($('rOnline'),b,test,null);
+}
+async function postRK(){
+ if(!RK||RK.posted) return;
+ const btn=$('rPost'), msg=$('rPostMsg');
+ RK.e.name=cleanName(S.name);
+ btn.disabled=true;msg.textContent='登録中…';
+ try{
+  await onlinePost(RK.b,RK.e);RK.posted=true;
+  const a=await onlineTop(RK.b,100);
+  const i=a.findIndex(x=>x.t===RK.e.t&&x.name===RK.e.name);
+  msg.innerHTML=i>=0?`登録しました。みんなの中で <b>${i+1}位</b>！`:'登録しました（100位圏外）。';
+  $('rOnline').innerHTML=rankList(a.slice(0,20),RK.test,RK.e.t);
+  btn.textContent='登録済み';
+ }catch(err){btn.disabled=false;msg.textContent='登録できませんでした（'+err.message+'）。';}
+}
+// --- ランキング画面
+let rankKind='play';
+function openRank(){showScreen('rank');renderRank();}
+function renderRank(){
+ const days=rankKind==='days';
+ $('kName').parentElement.hidden=days; $('kReset').hidden=days;
+ if(days){
+  $('kLabel').textContent='自分の成長';
+  const kEl=$('kKind');kEl.innerHTML='';
+  [['play','通常プレイ'],['test','検定テスト'],['days','日ごとの記録']].forEach(([v,l])=>{const x=el('button','',l);x.setAttribute('aria-pressed',rankKind===v);x.onclick=()=>{rankKind=v;renderRank();};kEl.appendChild(x);});
+  $('kHint').textContent='日ごとの最高記録です（この端末に保存）。続けるほど、上達がグラフで見えてきます。';
+  renderDays($('kLists'));
+  return;
+ }
+ const cfg=rankKind==='test'?{test:true,stage:S.stage}:{stage:S.stage,level:S.level,minutes:S.minutes,limit:S.limit,mode:S.mode,input:S.input};
+ const b=boardOf(cfg), test=rankKind==='test';
+ $('kLabel').textContent=boardLabel(cfg);
+ const kEl=$('kKind');kEl.innerHTML='';
+ [['play','通常プレイ'],['test','検定テスト'],['days','日ごとの記録']].forEach(([v,l])=>{const x=el('button','',l);x.setAttribute('aria-pressed',rankKind===v);x.onclick=()=>{rankKind=v;renderRank();};kEl.appendChild(x);});
+ $('kHint').textContent=test?'検定テストは科目ごとのランキングです。科目は設定画面で選んでいる科目です。':'今の設定（科目・レベル・時間・制限時間・ルール・入力方法）が同じ人どうしのランキングです。条件は設定画面で変えられます。';
+ $('kLists').innerHTML='<div><h5>この端末<small>上位10件</small></h5><div id="kLocal"></div></div><div><h5>みんな<small>オンライン上位20件</small></h5><div id="kOnline"></div></div>';
+ $('kLocal').innerHTML=rankList(localBoard(b),test,null);
+ fillOnline($('kOnline'),b,test,null);
+ $('kName').value=S.name||'';
+}
+$('kName').oninput=e=>{S.name=e.target.value;save();};
+$('rankBtn').onclick=()=>openRank();
+$('kBack').onclick=()=>{showScreen('setup');renderSetup();};
+$('kReset').onclick=()=>{
+ const cfg=rankKind==='test'?{test:true,stage:S.stage}:{stage:S.stage,level:S.level,minutes:S.minutes,limit:S.limit,mode:S.mode,input:S.input};
+ if(!confirm(`「${boardLabel(cfg)}」のこの端末のランキングを消します。よろしいですか？`))return;
+ try{localStorage.removeItem(LRK+boardOf(cfg));}catch(_){}
+ renderRank();
+};
 
 /* ===================== 結果画面 ===================== */
 function showResult(){
@@ -1263,6 +1527,8 @@ function showResult(){
  if(!g.hist.length) h.innerHTML='<li class="hint">まだ1問も打ち終えていません。</li>';
  g.hist.forEach(x=>{const li=el('li',x.ok?'ok':'ng');li.append(span('mk',x.ok?'○':'×'),span('w',x.d));h.appendChild(li);});
  $('rCoach').innerHTML='<div class="who">AIコーチのひとこと</div>'+gameComments(g).map(t=>`<p>${esc(t)}</p>`).join('');
+ if(g.prac) $('rRank').hidden=true;
+ else rankAfter({stage:g.cfg.stage,level:g.cfg.level,minutes:g.cfg.minutes,limit:g.cfg.limit,mode:g.cfg.mode,input:g.kana?'kana':'roma'},{score:g.score,kps,acc});
  showScreen('result');
 }
 $('startBtn').onclick=()=>{lastTest=false;startGame();};
@@ -1414,9 +1680,12 @@ document.addEventListener('keydown',e=>{
   const a=document.activeElement, onCtrl=a&&a!==document.body&&/BUTTON|INPUT/.test(a.tagName);
   if(e.key==='Enter'&&!onCtrl){e.preventDefault();if(!$('startBtn').disabled){lastTest=false;startGame();}}
  }else if(screen==='result'){
-  const a=document.activeElement, onBtn=a&&a.tagName==='BUTTON';
+  const a=document.activeElement, onBtn=a&&/BUTTON|INPUT/.test(a.tagName);
+  if(a&&a.tagName==='INPUT') return;
   if((e.key==='Enter'||e.key===' ')&&!onBtn){e.preventDefault();retry();}
   else if(e.key==='Escape'){showScreen('setup');renderSetup();}
+ }else if(screen==='rank'){
+  if(e.key==='Escape'&&!(document.activeElement&&document.activeElement.tagName==='INPUT')){showScreen('setup');renderSetup();}
  }else if(screen==='test'){
   if(e.key==='Enter'){e.preventDefault();nextTestSection();}
   else if(e.key==='Escape'){T=null;showScreen('setup');renderSetup();}
