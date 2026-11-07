@@ -29,6 +29,49 @@
 
 本アプリは同検定とは関係がなく、得点は練習用の目安です。
 
+## ランキングと日ごとの記録
+
+画面右上の「ランキング」から開きます。
+
+- **通常プレイ:** 科目・レベル・プレイ時間・制限時間・ルール・入力方法がすべて同じ条件どうしでランキングします。
+- **検定テスト:** 科目ごとのランキングです。
+- **この端末:** 条件ごとに上位10件をブラウザに保存します。名前を入れておくと、家族や友達と同じ端末で競えます。
+- **みんな（オンライン）:** 下の「オンラインランキングの設定」をすると、結果画面の「みんなのランキングに登録」で登録でき、上位20件が表示されます。
+- **日ごとの記録:** 日ごとの最高速度・その時の正確率・検定テストの最高点・回数・打った数を記録し、グラフと表で上達の推移を表示します。結果画面では「今日の最高速度を更新」「これまでの最高速度を更新！」などをお知らせします。
+
+### オンラインランキングの設定（Firebase）
+
+オンラインランキングには Google の Firebase（Cloud Firestore、無料枠で使えます）を使います。設定するまでは「この端末」のランキングだけが表示されます。
+
+1. [Firebase コンソール](https://console.firebase.google.com/) でプロジェクトを作成する
+2. 「Firestore Database」を作成する（本番環境モード、ロケーションは asia-northeast1 など）
+3. 「ルール」タブに次を貼り付けて公開する
+   ```
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /boards/{board}/scores/{id} {
+         allow read: if true;
+         allow create: if request.resource.data.keys().hasOnly(['name','score','kps','acc','t'])
+           && request.resource.data.name is string
+           && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 12
+           && request.resource.data.score is number && request.resource.data.score >= 0
+           && request.resource.data.score <= (board.matches('test-.*') ? 100 : 50000)
+           && request.resource.data.kps is number && request.resource.data.kps >= 0 && request.resource.data.kps <= 20
+           && request.resource.data.acc is number && request.resource.data.acc >= 0 && request.resource.data.acc <= 1
+           && request.resource.data.t is int;
+         allow update, delete: if false;
+       }
+     }
+   }
+   ```
+4. 「プロジェクトの設定」→「マイアプリ」でウェブアプリを追加し、表示される `projectId` と `apiKey` を `index.html` の `RANKING_CONFIG` に書く
+   ```js
+   const RANKING_CONFIG={projectId:'your-project-id',apiKey:'AIza...'};
+   ```
+
+Firebase のウェブ用 API キーは公開して使う前提の値で、書き込める内容は上のルールで制限しています。ただしブラウザから直接送る仕組みなので、不正なスコアの送信を完全には防げません。ルールでは、あり得ない値（毎秒20打を超える速度、検定テストで100点超えなど）を拒否しています。
+
 ## AIコーチ
 
 画面右上の「AIコーチ」から開きます。プレイ・練習のたびに、次の内容をブラウザ（localStorage）に自動で記録します。外部サーバーには送信しません。
