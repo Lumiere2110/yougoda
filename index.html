@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>用語打</title>
+<title>用語打 タイピング練習</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@500;700&family=Klee+One:wght@600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
@@ -172,6 +172,31 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .hist .ng .w{color:var(--muted)}
 .actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 .actions .hint{margin:0}
+/* AIコーチ */
+.sheet h4{margin:0 0 8px;font-size:13px;color:var(--muted);letter-spacing:.08em}
+.coach-msg{border-left:4px solid var(--red);background:var(--red-soft);padding:12px 16px;border-radius:0 8px 8px 0;font-family:var(--f-hand);font-size:16px;line-height:1.75}
+.coach-msg p{margin:0}
+.coach-msg p+p{margin-top:6px}
+.coach-msg .who{font-family:var(--f-body);font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--red);margin-bottom:4px}
+.cgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+@media (max-width:700px){.cgrid{grid-template-columns:1fr}}
+.wk{display:flex;flex-direction:column;gap:10px}
+.wk-row{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;align-items:center}
+.wk-row kbd{font-family:var(--f-mono);font-size:16px;border:1.5px solid var(--ink);border-bottom-width:3px;border-radius:5px;padding:2px 0;text-align:center}
+.wk-row .kn{font-size:22px;font-weight:700;text-align:center;line-height:1.2}
+.meter{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--red)}
+.wk-row small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.wl{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px 16px}
+.wl li{display:flex;flex-direction:column;min-width:0;border-bottom:1px dashed var(--line);padding-bottom:6px}
+.wl li b{overflow-wrap:anywhere}
+.wl li small{color:var(--muted);font-size:12px}
+.drill{display:flex;flex-direction:column;gap:12px;border-top:1.5px solid var(--ink);padding-top:16px}
+.drow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.dprev{display:flex;flex-wrap:wrap;gap:6px}
+.ditem{border:1.5px solid var(--line);border-radius:6px;padding:4px 10px;background:var(--paper);font-size:14px;display:flex;flex-direction:column;line-height:1.3;max-width:100%}
+.ditem small{font-size:11px;color:var(--muted)}
+.danger{background:none;border:0;color:var(--red);text-decoration:underline;text-underline-offset:3px;font-size:13px;margin-left:auto;padding:0}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 
@@ -180,7 +205,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 <main class="wrap">
   <header class="top">
     <div class="logo"><span class="logo-k">用語打</span><span class="logo-r">yougo-da</span></div>
-    <p class="tag">数学から法学まで。学術用語と短い文をローマ字で打ち抜くタイピングゲーム。</p>
+    <p class="tag">学術用語で鍛えるタイピング練習アプリ。AIコーチが苦手なキー・文字・問題を記録して、あなた専用の練習問題を作ります。</p>
+    <button id="coachBtn" class="ghost" type="button">AIコーチ</button>
     <button id="soundBtn" class="ghost" type="button">効果音: ON</button>
   </header>
 
@@ -220,6 +246,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
           <div class="best" id="bestInfo"></div>
           <button id="startBtn" class="start" type="button">スタート</button>
           <p class="hint">Enter でも開始できます。日本語入力（IME）はオフにしてください。</p>
+          <button id="coachBtn2" class="ghost" type="button">AIコーチ：苦手の分析と練習問題 →</button>
         </div>
       </div>
     </div>
@@ -228,7 +255,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   <section id="scr-play" hidden>
     <div class="col" style="gap:12px">
       <div class="hud">
-        <div class="big"><span class="lbl">残り時間</span><b id="hTime">1:00</b></div>
+        <div class="big"><span class="lbl" id="hTimeL">残り時間</span><b id="hTime">1:00</b></div>
         <div><span class="lbl">スコア</span><b id="hScore">0</b></div>
         <div><span class="lbl">連続入力</span><b id="hCombo">0</b><span class="pips" id="hPips"><i></i><i></i><i></i><i></i></span></div>
         <div><span class="lbl">速度</span><b id="hSpeed">0.0</b><small>打/秒</small></div>
@@ -268,10 +295,38 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
         <div><h4>ミスが多かったキー</h4><div class="keys" id="rKeys"></div></div>
         <div><h4>出題された問題</h4><ul class="hist" id="rHist"></ul></div>
       </div>
+      <div class="coach-msg" id="rCoach"></div>
       <div class="actions">
         <button id="retryBtn" class="start" type="button">もう一度</button>
+        <button id="drillNow" class="ghost" type="button">AIの練習問題で復習</button>
+        <button id="toCoach" class="ghost" type="button">AIコーチを見る</button>
         <button id="backBtn" class="ghost" type="button">設定に戻る</button>
         <p class="hint">Enter でもう一度 / Esc で設定へ</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="scr-coach" hidden>
+    <div class="sheet">
+      <div class="sheet-head"><span class="ttl">AIコーチ</span><span>あなたの記録から苦手を分析します（記録はこのブラウザの中だけに保存）</span></div>
+      <div class="coach-msg" id="cMsg"></div>
+      <dl class="stats" id="cStats"></dl>
+      <div class="cgrid">
+        <div><h4>苦手なキー</h4><div class="wk" id="cKeys"></div></div>
+        <div><h4>苦手な文字</h4><div class="wk" id="cKana"></div></div>
+      </div>
+      <div><h4>よく間違える問題</h4><ul class="wl" id="cWords"></ul></div>
+      <div class="drill">
+        <h4>練習問題を作る</h4>
+        <div class="modes" id="dTypes"></div>
+        <div class="drow"><span>問題数</span><div class="seg" id="dCounts"></div></div>
+        <div class="dprev" id="dPreview"></div>
+        <div class="actions">
+          <button id="dStart" class="start" type="button">この練習を始める</button>
+          <button id="dRemake" class="ghost" type="button">作り直す</button>
+          <button id="cBack" class="ghost" type="button">設定に戻る</button>
+          <button id="cReset" class="danger" type="button">記録をリセット</button>
+        </div>
       </div>
     </div>
   </section>
@@ -498,23 +553,27 @@ const sfx={key:()=>tone(1400,.03,'triangle',.025),miss:()=>tone(130,.14,'sawtoot
 
 /* ===================== ゲーム本体 ===================== */
 let G=null, screen='setup';
-function showScreen(s){screen=s;['setup','play','result'].forEach(n=>$('scr-'+n).hidden=n!==s);window.scrollTo(0,0);}
+function showScreen(s){screen=s;['setup','play','result','coach'].forEach(n=>$('scr-'+n).hidden=n!==s);window.scrollTo(0,0);}
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
 
-function startGame(){
- const pool=buildPool(); if(!pool.length) return;
+let lastOpts=null;
+function startGame(opts){
+ opts=opts&&opts.items?opts:null; lastOpts=opts;
+ const prac=!!opts;
+ const pool=prac?opts.items.slice():buildPool(); if(!pool.length) return;
  if(document.activeElement) document.activeElement.blur();
  if(G) stopTimers();
- G={pool:shuffle(pool.slice()),pi:0,score:0,correct:0,miss:0,combo:0,maxCombo:0,tier:0,comboBonus:0,cleared:0,failed:0,
-    hist:[],missKeys:{},dur:S.minutes*60000,t0:0,running:false,done:false,timers:[],raf:0,
-    limitP:limitParams(),mode:S.mode,level:S.level,stageName:stageOf(S.stage).name,
-    catNames:stageOf(S.stage).cats.filter(c=>S.cats.includes(c.id)).map(c=>c.name),cfg:{...S,show:{...S.show}}};
+ G={pool:prac?pool:shuffle(pool.slice()),pi:0,prac,quota:prac?pool.length:0,title:prac?opts.title:'',missKana:{},missWords:[],score:0,correct:0,miss:0,combo:0,maxCombo:0,tier:0,comboBonus:0,cleared:0,failed:0,
+    hist:[],missKeys:{},dur:prac?0:S.minutes*60000,t0:0,running:false,done:false,timers:[],raf:0,
+    limitP:prac?null:limitParams(),mode:prac?'normal':S.mode,level:S.level,stageName:prac?'練習':stageOf(S.stage).name,
+    catNames:prac?[opts.title]:stageOf(S.stage).cats.filter(c=>S.cats.includes(c.id)).map(c=>c.name),cfg:{...S,show:{...S.show}}};
  showScreen('play');
- $('hTime').textContent=fmt(G.dur);$('totalBar').style.width='100%';
+ $('hTimeL').textContent=prac?'進み具合':'残り時間';
+ $('hTime').textContent=prac?`0/${G.quota}`:fmt(G.dur);$('totalBar').style.width='100%';
  ['hScore','hCombo','hMiss'].forEach(id=>$(id).textContent='0');$('hSpeed').textContent='0.0';
  updatePips();$('imeWarn').hidden=true;
- $('wInfo').textContent=`Lv.${G.level} · ${MODES.find(m=>m.v===G.mode).name}`;
+ $('wInfo').textContent=prac?`AI練習 · 全${G.quota}問`:`Lv.${G.level} · ${MODES.find(m=>m.v===G.mode).name}`;
  G.w=null;pickNext();showWord(true);
  const cd=$('countdown');cd.hidden=false;
  let n=3;const step=()=>{
@@ -523,11 +582,13 @@ function startGame(){
  };step();
 }
 function pickNext(){
+ if(G.pi>=G.pool.length&&G.prac){G.nextW=null;return;}
  if(G.pi>=G.pool.length){const last=G.pool[G.pool.length-1];shuffle(G.pool);if(G.pool.length>1&&G.pool[0]===last)[G.pool[0],G.pool[1]]=[G.pool[1],G.pool[0]];G.pi=0;}
  G.nextW=G.pool[G.pi++];
 }
 function begin(){G.running=true;G.t0=performance.now();G.wStart=G.t0;G.raf=requestAnimationFrame(loop);}
 function showWord(first){
+ if(!G.nextW){finish(false);return;}
  G.w=G.nextW;pickNext();
  G.i=0;G.buf='';G.typed='';G.memo={};G.wordMiss=0;G.wStart=performance.now();
  const total=prefRoma(G.w.y,0,G.memo).length;
@@ -535,7 +596,7 @@ function showWord(first){
  $('wbarWrap').classList.toggle('none',!G.wLimit);
  $('wBar').style.width='100%';$('wBar').classList.remove('low');
  $('wTag').innerHTML=`${G.w.stage} › <b>${G.w.cat}</b>`;
- $('next').textContent=G.nextW.d;
+ $('next').textContent=G.nextW?G.nextW.d:'（これが最後の問題）';
  renderWord();
 }
 function renderWord(){
@@ -576,6 +637,7 @@ function tryKey(k){
 function onType(k){
  const expect=G.expect;
  if(tryKey(k)){
+  lrKey(k,true);
   G.typed+=k;G.correct++;G.combo++;G.maxCombo=Math.max(G.maxCombo,G.combo);
   G.score+=G.level+(G.combo>=60?2:G.combo>=30?1:0);           // 1打 1〜5点
   if(G.tier<4&&G.combo>=30*(G.tier+1)){                          // 30打ごとの連続ボーナス(最大4回)
@@ -584,21 +646,23 @@ function onType(k){
   }else sfx.key();
   if(G.i>=G.w.y.length){
    const b=[10,13,16][G.level-1]+(G.wordMiss?0:4);              // 1問クリア 10〜20点
-   G.score+=b;G.cleared++;G.hist.push({d:G.w.d,ok:true});
+   G.score+=b;G.cleared++;G.hist.push({d:G.w.d,ok:true});lrWordEnd(true);
    pop(`+${b}`);sfx.clear();showWord();
   }else renderWord();
  }else{
   G.miss++;G.wordMiss++;G.combo=0;G.tier=0;updatePips();
-  if(expect)G.missKeys[expect]=(G.missKeys[expect]||0)+1;
+  if(expect){G.missKeys[expect]=(G.missKeys[expect]||0)+1;lrKey(expect,false,k);}
+  const cu=cands(G.w.y,G.i,G.memo)[0];
+  if(cu){const lab=unitLabel(G.w.y,G.i,cu.l);G.missKana[lab]=(G.missKana[lab]||0)+1;const r=LD.kana[lab]||(LD.kana[lab]={s:0,m:0});r.m++;}
   const card=$('card');card.classList.remove('miss');void card.offsetWidth;card.classList.add('miss');
   sfx.miss();
-  if(G.mode==='sudden'){G.hist.push({d:G.w.d,ok:false});finish(true);return;}
+  if(G.mode==='sudden'){G.hist.push({d:G.w.d,ok:false});lrWordEnd(false);finish(true);return;}
   if(G.mode==='strict'){failWord('ミス');return;}
  }
  updateHud();
 }
 function failWord(reason){
- G.failed++;G.hist.push({d:G.w.d,ok:false});
+ G.failed++;G.hist.push({d:G.w.d,ok:false});lrWordEnd(false);
  const fx=$('fx');fx.textContent='× '+reason;fx.classList.remove('show');void fx.offsetWidth;fx.classList.add('show');
  sfx.fail();showWord();updateHud();
 }
@@ -610,10 +674,17 @@ function updateHud(){
 const fmt=ms=>{const s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
 function loop(){
  if(!G||G.done||!G.running) return;
- const now=performance.now(), left=G.dur-(now-G.t0);
- if(left<=0){finish(false);return;}
- $('hTime').textContent=fmt(left);
- $('totalBar').style.width=(left/G.dur*100)+'%';
+ const now=performance.now();
+ if(G.dur){
+  const left=G.dur-(now-G.t0);
+  if(left<=0){finish(false);return;}
+  $('hTime').textContent=fmt(left);
+  $('totalBar').style.width=(left/G.dur*100)+'%';
+ }else{
+  const d=G.cleared+G.failed;
+  $('hTime').textContent=`${d}/${G.quota}`;
+  $('totalBar').style.width=((1-d/G.quota)*100)+'%';
+ }
  const el=(now-G.t0)/1000;$('hSpeed').textContent=(el>0?G.correct/el:0).toFixed(1);
  if(G.wLimit){
   const wl=G.wLimit-(now-G.wStart);
@@ -625,21 +696,24 @@ function loop(){
 function stopTimers(){G.timers.forEach(clearTimeout);cancelAnimationFrame(G.raf);G.running=false;}
 function finish(gameover){
  if(G.done) return;
- const elapsed=Math.min(G.dur,performance.now()-G.t0)/1000;
+ const raw=performance.now()-G.t0, elapsed=(G.dur?Math.min(G.dur,raw):raw)/1000;
  stopTimers();G.done=true;G.gameover=gameover;G.elapsed=Math.max(elapsed,.001);
+ const tot=G.correct+G.miss;
+ if(tot>0){LD.sessions.push({t:Date.now(),kps:+(G.correct/G.elapsed).toFixed(2),acc:+(G.correct/tot).toFixed(3),sc:G.score,p:G.prac});LD.sessions=LD.sessions.slice(-60);saveLearn();}
  sfx.end();showResult();
 }
-function abort(){if(G){stopTimers();G.done=true;}showScreen('setup');renderSetup();}
+function abort(){const p=G&&G.prac;if(G){stopTimers();G.done=true;}if(p)openCoach();else{showScreen('setup');renderSetup();}}
 
 /* ===================== 結果画面 ===================== */
 function showResult(){
  const g=G, total=g.correct+g.miss, acc=total?g.correct/total:0, kps=g.correct/g.elapsed;
  const eff=kps*acc*acc, R=RANKS.find(r=>eff>=r.min);
  const key=`yougoda-best:${g.cfg.stage}|${g.cfg.level}|${g.cfg.minutes}|${g.cfg.limit}|${g.cfg.mode}`;
- const prev=store.get(key,null), isBest=g.score>0&&(prev==null||g.score>prev);
+ const prev=g.prac?null:store.get(key,null), isBest=!g.prac&&g.score>0&&(prev==null||g.score>prev);
  if(isBest) store.set(key,g.score);
  const lim=LIMITS.find(l=>l.v===g.cfg.limit);
- $('rHead').innerHTML=`<span class="ttl">答案</span><span>科目 <b>${g.stageName}</b></span><span>範囲 <b>${g.catNames.join('・')}</b></span><span><b>Lv.${g.level}</b> · <b>${g.cfg.minutes}分</b> · 制限 <b>${lim.label}</b> · <b>${MODES.find(m=>m.v===g.mode).name}</b></span>`+(g.gameover?'<span class="over">ミスによりゲーム終了</span>':'');
+ if(g.prac) $('rHead').innerHTML=`<span class="ttl">練習の答案</span><span>内容 <b>${esc(g.title)}</b></span><span><b>${g.quota}問</b></span>`;
+ else $('rHead').innerHTML=`<span class="ttl">答案</span><span>科目 <b>${g.stageName}</b></span><span>範囲 <b>${g.catNames.join('・')}</b></span><span><b>Lv.${g.level}</b> · <b>${g.cfg.minutes}分</b> · 制限 <b>${lim.label}</b> · <b>${MODES.find(m=>m.v===g.mode).name}</b></span>`+(g.gameover?'<span class="over">ミスによりゲーム終了</span>':'');
  $('rScore').textContent=g.score;
  $('rBest').innerHTML=isBest?'<span class="newbest">自己ベスト更新！</span>':(prev!=null?`<span class="hint">自己ベスト ${prev} 点</span>`:'');
  $('rStamp').innerHTML=`<b>${R.r}</b><span>${R.t}</span>`;
@@ -662,10 +736,14 @@ function showResult(){
  const h=$('rHist');h.innerHTML='';
  if(!g.hist.length) h.innerHTML='<li class="hint">まだ1問も打ち終えていません。</li>';
  g.hist.forEach(x=>{const li=el('li',x.ok?'ok':'ng');li.append(span('mk',x.ok?'○':'×'),span('w',x.d));h.appendChild(li);});
+ $('rCoach').innerHTML='<div class="who">AIコーチのひとこと</div>'+gameComments(g).map(t=>`<p>${esc(t)}</p>`).join('');
  showScreen('result');
 }
-$('startBtn').onclick=startGame;
-$('retryBtn').onclick=startGame;
+$('startBtn').onclick=()=>startGame();
+$('retryBtn').onclick=()=>startGame(lastOpts);
+$('drillNow').onclick=()=>startGame({items:makeDrill('mix',15),title:'AIミックス（15問）'});
+$('toCoach').onclick=()=>openCoach();
+$('coachBtn').onclick=$('coachBtn2').onclick=()=>openCoach();
 $('backBtn').onclick=()=>{showScreen('setup');renderSetup();};
 
 /* ===================== キー入力 ===================== */
@@ -684,10 +762,196 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!onCtrl){e.preventDefault();if(!$('startBtn').disabled)startGame();}
  }else if(screen==='result'){
   const a=document.activeElement, onBtn=a&&a.tagName==='BUTTON';
-  if((e.key==='Enter'||e.key===' ')&&!onBtn){e.preventDefault();startGame();}
+  if((e.key==='Enter'||e.key===' ')&&!onBtn){e.preventDefault();startGame(lastOpts);}
   else if(e.key==='Escape'){showScreen('setup');renderSetup();}
+ }else if(screen==='coach'){
+  if(e.key==='Escape'){showScreen('setup');renderSetup();}
  }
 });
+
+/* ===================== 学習記録（AIコーチ） ===================== */
+// すべての打鍵・ミス・問題ごとの成績をこのブラウザの localStorage に記録し、苦手を分析して練習問題を作る。
+const LKEY='yougoda-learn';
+const LD=Object.assign({keys:{},conf:{},kana:{},words:{},sessions:[]},store.get(LKEY,{}));
+const saveLearn=()=>store.set(LKEY,LD);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ALLW=STAGES.filter(s=>s.id!=='all').flatMap(s=>s.cats.flatMap(c=>c.words));
+const wkey=w=>w.d+'|'+w.y;
+function unitLabel(y,i,l){const u=y.substr(i,l);return u[0]==='っ'&&u.length>1?'っ':u;}
+function unitsOf(y,upto){const memo={},out=[],end=upto==null?y.length:upto;let i=0;while(i<end){const c=cands(y,i,memo)[0];if(!c)break;out.push(unitLabel(y,i,c.l));i+=c.l;}return out;}
+function lrKey(k,ok,typed){
+ const r=LD.keys[k]||(LD.keys[k]={h:0,m:0});ok?r.h++:r.m++;
+ if(!ok&&typed&&typed!==k){const c=LD.conf[k]||(LD.conf[k]={});c[typed]=(c[typed]||0)+1;}
+}
+function lrWordEnd(ok){
+ const w=G.w;
+ unitsOf(w.y,ok?null:G.i).forEach(l=>{const r=LD.kana[l]||(LD.kana[l]={s:0,m:0});r.s++;});
+ if(!w.gen){
+  const r=LD.words[wkey(w)]||(LD.words[wkey(w)]={d:w.d,y:w.y,st:w.stage,c:w.cat,s:0,m:0,f:0,cl:0});
+  r.s++;r.m+=G.wordMiss;if(!ok)r.f++;r.cl=ok&&!G.wordMiss?r.cl+1:0;r.t=Date.now();
+ }
+ if(G.wordMiss||!ok) G.missWords.push(w);
+ saveLearn();
+}
+
+const FINGER={};
+[['1qaz','左小指'],['2wsx','左薬指'],['3edc','左中指'],['45rtfgvb','左人差し指'],['67yuhjnm','右人差し指'],['8ik,','右中指'],['9ol.','右薬指'],['0p;/-^:@[]','右小指']]
+ .forEach(([ks,f])=>[...ks].forEach(k=>FINGER[k]=f));
+function kanaTip(lab){
+ const T={'し':'「si」でも打てます（1打短縮）。','ち':'「ti」でも打てます（1打短縮）。','つ':'「tu」でも打てます（1打短縮）。','ふ':'「hu」でも打てます。','じ':'「zi」でも打てます。',
+  'ん':'次が母音・や行・な行のときは「nn」、それ以外は「n」1回でOK。','っ':'次の文字の子音を2回打ちます（例: っか→kka）。単独なら「xtu」「ltu」。',
+  'ー':'長音は「-」キー（右小指、0 の右）。','、':'読点は「,」キー。','。':'句点は「.」キー。','・':'中黒は「/」キー。'};
+ if(T[lab]) return T[lab];
+ const opt=YOON[lab]||BASE[lab];
+ if(opt) return `「${opt.join('」「')}」で入力できます。`+(/[ぁぃぅぇぉゃゅょゎ]/.test(lab[0])?'小さい文字は先に x か l。':'');
+ return '記号や英数字は、キーボードの位置を目で確認してから打ちましょう。';
+}
+
+function analyze(){
+ const keys=Object.entries(LD.keys).map(([k,r])=>({k,m:r.m,n:r.h+r.m,rate:r.m/(r.h+r.m+8),
+   conf:Object.entries(LD.conf[k]||{}).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0])}))
+   .filter(x=>x.m>=2).sort((a,b)=>b.rate-a.rate);
+ const kana=Object.entries(LD.kana).map(([k,r])=>({k,m:r.m,n:r.s,rate:r.m/(Math.max(r.s,r.m)+4)}))
+   .filter(x=>x.m>=2).sort((a,b)=>b.rate-a.rate);
+ const all=Object.values(LD.words);
+ const words=all.filter(r=>(r.m||r.f)&&r.cl<3).map(r=>({...r,score:(r.m+3*r.f)/Math.max(1,r.s)*Math.pow(.5,r.cl)})).sort((a,b)=>b.score-a.score);
+ const mastered=all.filter(r=>(r.m||r.f)&&r.cl>=3).length;
+ let hit=0,miss=0;Object.values(LD.keys).forEach(r=>{hit+=r.h;miss+=r.m;});
+ return {keys,kana,words,mastered,seenWords:all.length,hit,miss,sessions:LD.sessions};
+}
+
+function coachComments(A){
+ const out=[], ss=A.sessions;
+ if(!ss.length&&!A.hit) return ['まだ記録がありません。まずは1回練習してみましょう。打つたびに、ミスしたキー・文字・問題を記録して苦手を分析します。','下の「練習問題を作る」では、タイピングでつまずきやすい文字（っ・ん・しゃ など）の基礎ドリルから始められます。'];
+ const avg=(a,f)=>a.reduce((s,x)=>s+f(x),0)/a.length;
+ const rec=ss.slice(-5), prev=ss.slice(-10,-5);
+ if(rec.length){
+  const acc=avg(rec,x=>x.acc)*100, kps=avg(rec,x=>x.kps);
+  let t=`直近${rec.length}回の平均は、速度 ${kps.toFixed(2)} 打/秒・正確率 ${acc.toFixed(1)}%。`;
+  if(prev.length>=2){
+   const da=acc-avg(prev,x=>x.acc)*100, dk=kps-avg(prev,x=>x.kps);
+   if(dk>.15&&da>-1) t+=`その前の${prev.length}回より ${dk.toFixed(2)} 打/秒 速くなっています。いい調子です。`;
+   else if(da>1.5) t+=`正確率が ${da.toFixed(1)} ポイント上がりました。`;
+   else if(da<-2) t+=`正確率が ${(-da).toFixed(1)} ポイント下がっています。急ぎすぎに注意。`;
+   else if(dk<-.2) t+='少しペースが落ちています。疲れていたら休憩も練習のうちです。';
+   else t+='安定しています。';
+  }
+  out.push(t);
+  if(acc<90) out.push('ミスが多めです。速さより「1打ずつ確実に」を意識すると、結果的に速くなります。手元を見ずに、ホームポジション（F と J）に戻る癖をつけましょう。');
+  else if(acc>=97&&kps<3) out.push('正確さは十分です。次は1問ごとの制限時間を「はやい」にして、少しずつスピードを上げてみましょう。');
+  else if(acc>=97) out.push('速さ・正確さともに上級です。Lv.3 や「鬼」で腕試しを。');
+ }
+ const k=A.keys[0];
+ if(k){let t=`いちばん苦手なキーは「${k.k}」（${FINGER[k.k]||'指の担当なし'}）。ミス率 ${(k.m/k.n*100).toFixed(1)}%。`;if(k.conf.length)t+=`よく「${k.conf.join('」「')}」と打ち間違えています。`;out.push(t);}
+ const ka=A.kana[0];
+ if(ka) out.push(`苦手な文字は「${ka.k}」。${kanaTip(ka.k)}`);
+ const w=A.words[0];
+ if(w) out.push(`「${w.d}」で ${w.m+w.f} 回つまずいています。練習問題で重点的に出題します。`);
+ if(A.mastered) out.push(`これまでに ${A.mastered} 問を克服しました（間違えた問題を3回連続ノーミスで卒業）。`);
+ return out;
+}
+function gameComments(g){
+ const out=[];
+ const mk=Object.entries(g.missKeys).sort((a,b)=>b[1]-a[1])[0];
+ const ka=Object.entries(g.missKana).sort((a,b)=>b[1]-a[1])[0];
+ if(!g.miss){out.push('ノーミス！この調子で、レベルや制限時間を一段上げてみましょう。');return out;}
+ if(ka) out.push(`今回いちばんミスした文字は「${ka[0]}」（${ka[1]}回）。${kanaTip(ka[0])}`);
+ if(mk) out.push(`キーでは「${mk[0]}」（${FINGER[mk[0]]||'指の担当なし'}）のミスが ${mk[1]} 回。`);
+ const ws=[...new Set(g.missWords.map(w=>w.d))].slice(0,3);
+ if(ws.length) out.push(`つまずいた問題: ${ws.map(x=>'「'+x+'」').join('')}。記録したので「AIの練習問題で復習」で出題します。`);
+ return out;
+}
+
+/* ===================== 練習問題の自動作成 ===================== */
+const DEF_KANA=['っ','ん','しゃ','ちょ','じゅ','ふぁ'];
+const FILL=[...'かきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわがぎぐげござじずぜぞだでどばびぶべぼぱぴぷぺぽ'];
+const DCONS=[...'かきくけこさしすせそたちつてとぱぴぷぺぽ'];
+const VOW=[...'あいうえおなにぬねのやゆよ'];
+const rnd=a=>a[Math.random()*a.length|0];
+// ローマ字に特定のキーを含むかな（キー練習用）
+const KANA_BY_KEY={};
+Object.entries({...BASE,...YOON}).forEach(([kn,rs])=>{if(!/^[あ-ろわをがぎぐげござじずぜぞだでどばびぶべぼぱぴぷぺぽ]$|^[きしちにひみりぎじびぴ][ゃゅょ]$/.test(kn))return;[...new Set(rs[0])].forEach(ch=>(KANA_BY_KEY[ch]=KANA_BY_KEY[ch]||[]).push(kn));});
+const genItem=(s,why)=>({d:s,y:s,n:[...s].length,cat:'AIが作った練習',stage:'練習',gen:true,why});
+function genKana(lab){
+ if(lab==='っ') return rnd(FILL)+'っ'+rnd(DCONS)+rnd(FILL)+'っ'+rnd(DCONS);
+ if(lab==='ん') return rnd(FILL)+'ん'+rnd(VOW)+rnd(FILL)+'ん'+rnd(FILL);
+ return shuffle([lab,lab,rnd(FILL),rnd(FILL)]).join('');
+}
+function genKey(k){
+ const pool=KANA_BY_KEY[k]; if(!pool) return null;
+ return Array.from({length:4},()=>rnd(pool)).join('');
+}
+const DTYPES=[
+ {v:'mix',name:'おまかせ（AIミックス）',desc:'間違えた問題の復習＋苦手な文字・キーを含む問題を、AIが組み合わせて出題'},
+ {v:'review',name:'間違えた問題の復習',desc:'ミス・時間切れがあった問題だけ。3回連続ノーミスで卒業'},
+ {v:'kana',name:'苦手文字ドリル',desc:'苦手な文字（っ・ん・しゃ など）の練習用文字列と、それを含む用語'},
+ {v:'keys',name:'苦手キー特訓',desc:'苦手なキーを何度も打つ、かなの練習用文字列'}
+];
+function makeDrill(type,n){
+ const A=analyze();
+ const wk=A.kana.length?A.kana.slice(0,5).map(x=>x.k):DEF_KANA.slice();
+ const kw={};wk.forEach((k,i)=>kw[k]=5-i);
+ const wkeys=A.keys.length?A.keys.slice(0,5).map(x=>x.k):['j','h','y','t'];
+ const keyW={};wkeys.forEach((k,i)=>keyW[k]=(5-i)/5);
+ const byKey=new Map(ALLW.map(w=>[wkey(w),w]));
+ const items=[], used=new Set();
+ const add=(w,why)=>{const k=wkey(w);if(used.has(k)||items.length>=n)return;used.add(k);items.push({...w,why});};
+ const review=A.words.map(r=>byKey.get(r.d+'|'+r.y)).filter(Boolean);
+ const scored=()=>ALLW.filter(w=>!used.has(wkey(w))).map(w=>{
+   let s=0,hit=null,khit=null;
+   unitsOf(w.y).forEach(u=>{if(kw[u]){s+=kw[u];hit=hit||u;}});
+   for(const ch of prefRoma(w.y,0,{})) if(keyW[ch]){s+=keyW[ch]*.4;khit=khit||ch;}
+   return {w,s:s+Math.random()*1.5,hit,khit};
+  }).sort((a,b)=>b.s-a.s);
+ const why=x=>x.hit?`苦手文字「${x.hit}」`:x.khit?`苦手キー「${x.khit}」`:'おすすめ';
+ if(type==='review'){
+  review.forEach(w=>add(w,'復習'));
+ }else if(type==='kana'){
+  const ng=Math.ceil(n*.4), base=Math.min(wk.length,3);
+  for(let i=0;i<ng;i++){const lab=wk[i%base];items.push(genItem(genKana(lab),`生成・${lab}`));}
+  scored().forEach(x=>x.hit&&add(x.w,why(x)));
+  scored().forEach(x=>add(x.w,why(x)));
+ }else if(type==='keys'){
+  const ks=wkeys.filter(k=>KANA_BY_KEY[k]);
+  for(let i=0;ks.length&&items.length<Math.ceil(n*.7);i++){const k=ks[i%Math.min(ks.length,3)];items.push(genItem(genKey(k),`生成・キー ${k}`));}
+  scored().forEach(x=>x.khit&&add(x.w,why(x)));
+ }else{
+  review.slice(0,Math.ceil(n*.4)).forEach(w=>add(w,'復習'));
+  const ng=Math.min(3,Math.floor(n*.15));
+  for(let i=0;i<ng;i++){const lab=wk[i%wk.length];items.push(genItem(genKana(lab),`生成・${lab}`));}
+  scored().forEach(x=>add(x.w,why(x)));
+ }
+ return shuffle(items.slice(0,n));
+}
+
+/* ===================== AIコーチ画面 ===================== */
+const DR={type:'mix',count:20,items:null};
+function remakeDrill(){DR.items=makeDrill(DR.type,DR.count);}
+function openCoach(){if(!DR.items)remakeDrill();showScreen('coach');renderCoach();}
+function renderCoach(){
+ const A=analyze();
+ $('cMsg').innerHTML='<div class="who">AIコーチより</div>'+coachComments(A).map(t=>`<p>${esc(t)}</p>`).join('');
+ const tot=A.hit+A.miss;
+ const st=[['記録した打鍵',tot,'打'],['通算の正確率',tot?(A.hit/tot*100).toFixed(1):'—','%'],['練習回数',A.sessions.length,'回'],['打った問題の種類',A.seenWords,'問'],['復習待ちの問題',A.words.length,'問'],['克服した問題',A.mastered,'問']];
+ $('cStats').innerHTML=st.map(s=>`<div><dt>${s[0]}</dt><dd>${s[1]}<small>${s[2]}</small></dd></div>`).join('');
+ const kTop=A.keys.slice(0,6), kMax=kTop.length?kTop[0].m/kTop[0].n:1;
+ $('cKeys').innerHTML=kTop.length?kTop.map(x=>`<div class="wk-row"><kbd>${esc(x.k)}</kbd><div><div class="meter"><i style="width:${(x.m/x.n/kMax*100).toFixed(0)}%"></i></div><small>ミス ${x.m} / ${x.n} 打（${(x.m/x.n*100).toFixed(1)}%）· ${FINGER[x.k]||'指の担当なし'}${x.conf.length?` · よく「${esc(x.conf.join('」「'))}」と打ち間違え`:''}</small></div></div>`).join(''):'<p class="hint">まだ十分な記録がありません。</p>';
+ const aTop=A.kana.slice(0,6), aMax=aTop.length?aTop[0].rate:1;
+ $('cKana').innerHTML=aTop.length?aTop.map(x=>`<div class="wk-row"><span class="kn">${esc(x.k)}</span><div><div class="meter"><i style="width:${(x.rate/aMax*100).toFixed(0)}%"></i></div><small>ミス ${x.m} 回 / 打てた ${x.n} 回 · ${esc(kanaTip(x.k))}</small></div></div>`).join(''):'<p class="hint">まだ十分な記録がありません。</p>';
+ const wl=A.words.slice(0,12);
+ $('cWords').innerHTML=wl.length?wl.map(r=>`<li><b>${esc(r.d)}</b><small>${esc(r.y)} · ${esc(r.st)}／${esc(r.c)}</small><small>出題 ${r.s} 回 · ミス ${r.m} 打 · 不正解 ${r.f} 回 · 連続ノーミス ${r.cl}/3</small></li>`).join(''):'<li class="hint">間違えた問題はまだありません。</li>';
+ // 練習問題
+ const tEl=$('dTypes');tEl.innerHTML='';
+ DTYPES.forEach(t=>{const b=el('button','mode',`<span class="dot"></span><b>${t.name}</b><span>${t.desc}</span>`);b.setAttribute('aria-pressed',DR.type===t.v);b.onclick=()=>{DR.type=t.v;remakeDrill();renderCoach();};tEl.appendChild(b);});
+ const cEl=$('dCounts');cEl.innerHTML='';
+ [10,20,30].forEach(c=>{const b=el('button','',`${c}問`);b.setAttribute('aria-pressed',DR.count===c);b.onclick=()=>{DR.count=c;remakeDrill();renderCoach();};cEl.appendChild(b);});
+ $('dPreview').innerHTML=DR.items.length?DR.items.map(w=>`<span class="ditem">${esc(w.d)}<small>${esc(w.why)}</small></span>`).join(''):'<p class="hint">この種類の練習問題はまだ作れません。まずは何回か練習して、間違えた問題を記録しましょう。</p>';
+ $('dStart').disabled=!DR.items.length;
+}
+$('dStart').onclick=()=>{if(DR.items.length)startGame({items:DR.items,title:`${DTYPES.find(t=>t.v===DR.type).name}（${DR.items.length}問）`});};
+$('dRemake').onclick=()=>{remakeDrill();renderCoach();};
+$('cBack').onclick=()=>{showScreen('setup');renderSetup();};
+$('cReset').onclick=()=>{if(!confirm('苦手の記録をすべて消去します。よろしいですか？'))return;Object.assign(LD,{keys:{},conf:{},kana:{},words:{},sessions:[]});saveLearn();remakeDrill();renderCoach();};
 
 renderSetup();
 </script>
