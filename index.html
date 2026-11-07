@@ -118,6 +118,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .r-kata{font-size:18px;letter-spacing:.04em}
 .word .main{font-family:var(--f-body);font-weight:700;font-size:clamp(28px,5.4vw,50px);line-height:1.25;letter-spacing:.03em}
 .r-hira .done,.r-kata .done{background:linear-gradient(transparent 55%,var(--marker) 55%);color:var(--muted)}
+.r-mean{font-size:14px;color:var(--muted)}
 .r-roma{font-family:var(--f-mono);font-size:clamp(17px,2.6vw,24px);letter-spacing:.04em;color:var(--muted);word-break:break-all;margin-top:6px}
 .r-roma .t{color:var(--accent)}
 .r-roma .c{color:var(--ink);border-bottom:3px solid var(--red)}
@@ -228,7 +229,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
         </div>
       </div>
       <div class="col">
-        <div><h2 class="sec-h"><span class="n">04</span>レベル（読みの文字数）</h2><div id="levels" class="seg"></div></div>
+        <div><h2 class="sec-h"><span class="n">04</span>レベル（読みの文字数）</h2><div id="levels" class="seg"></div><p class="hint" id="levelHint">英語は英字2文字をかな1字として数えます（Lv.1 は約5〜12字、Lv.3 は約13〜32字）。</p></div>
         <div><h2 class="sec-h"><span class="n">05</span>プレイ時間</h2><div id="times" class="seg"></div></div>
         <div>
           <h2 class="sec-h"><span class="n">06</span>1問ごとの制限時間</h2>
@@ -268,6 +269,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
           <div class="r-hira" id="rHira"></div>
           <div class="r-kanji" id="rKanji"></div>
           <div class="r-kata" id="rKata"></div>
+          <div class="r-mean" id="rMean"></div>
           <div class="r-roma" id="rRoma"></div>
         </div>
         <div class="wbar" id="wbarWrap"><i id="wBar"></i></div>
@@ -376,9 +378,129 @@ const STAGES = [
   {name:'データ・AI',w:`人工知能|じんこうちのう 機械学習|きかいがくしゅう 深層学習|しんそうがくしゅう 教師あり学習|きょうしありがくしゅう 強化学習|きょうかがくしゅう ニューラルネットワーク|にゅーらるねっとわーく データベース|でーたべーす 主キー|しゅきー 正規化|せいきか 過学習|かがくしゅう 学習率|がくしゅうりつ 損失関数|そんしつかんすう 勾配降下法|こうばいこうかほう 特徴量|とくちょうりょう ビッグデータ|びっぐでーた データマイニング|でーたまいにんぐ 自然言語処理|しぜんげんごしょり 画像認識|がぞうにんしき 生成AI|せいせいAI 大規模言語モデル|だいきぼげんごもでる 訓練データ|くんれんでーた テストデータで評価する|てすとでーたでひょうかする クラスタリング|くらすたりんぐ 回帰と分類|かいきとぶんるい 外れ値|はずれち SQL文を実行する|SQLぶんをじっこうする`},
   {name:'コンピュータの仕組み',w:`CPU|CPU メモリ|めもり 主記憶装置|しゅきおくそうち 補助記憶装置|ほじょきおくそうち キャッシュ|きゃっしゅ レジスタ|れじすた 入力装置|にゅうりょくそうち 出力装置|しゅつりょくそうち 論理回路|ろんりかいろ 半加算器|はんかさんき 二進数|にしんすう 十六進数|じゅうろくしんすう ビット|びっと バイト|ばいと クロック周波数|くろっくしゅうはすう オペレーティングシステム|おぺれーてぃんぐしすてむ 割り込み処理|わりこみしょり 仮想記憶|かそうきおく マルチコア|まるちこあ 論理積と論理和|ろんりせきとろんりわ 否定論理積|ひていろんりせき 1バイトは8ビット|1ばいとは8びっと フォンノイマン型|ふぉんのいまんがた 半導体|はんどうたい 集積回路|しゅうせきかいろ ムーアの法則|むーあのほうそく`}
  ]}
+ ,{id:'eng',name:'英語',glyph:'英',en:'ENGLISH',cats:[
+  {name:'TOEIC',e:`invoice|請求書
+deadline|締め切り
+schedule|予定
+reschedule|予定を変更する
+conference|会議
+agenda|議題
+budget|予算
+revenue|収益
+quarterly report|四半期報告書
+shipment|出荷
+warehouse|倉庫
+inventory|在庫
+receipt|領収書
+refund|返金
+applicant|応募者
+job interview|就職面接
+promotion|昇進
+colleague|同僚
+supervisor|上司
+headquarters|本社
+branch office|支店
+customer survey|顧客アンケート
+merger|合併
+contract|契約
+negotiation|交渉
+attendee|出席者
+itinerary|旅程
+reimbursement|経費の払い戻し
+maintenance|保守点検
+Please find the attached file.|添付ファイルをご確認ください。
+The meeting has been postponed.|会議は延期されました。
+I'm calling about my order.|注文の件でお電話しました。
+Sales increased by 10%.|売上が10%増加しました。
+The office will be closed.|事務所は休業します。
+Thank you for your patience.|お待ちいただきありがとうございます。
+Let's take a short break.|少し休憩しましょう。
+I'd like to make a reservation.|予約をしたいのですが。`},
+  {name:'日常会話',e:`Hello|こんにちは
+Thank you|ありがとう
+Good morning|おはよう
+Good night|おやすみ
+See you later|またね
+Nice to meet you.|はじめまして。
+How are you?|元気？
+I'm fine, thanks.|元気です、ありがとう。
+What's your name?|お名前は？
+Where are you from?|どこの出身ですか？
+I'm from Japan.|日本出身です。
+Excuse me.|すみません。
+I'm sorry.|ごめんなさい。
+No problem.|問題ないよ。
+Of course!|もちろん！
+That sounds great!|いいね！
+What time is it?|今何時？
+How much is this?|これはいくらですか？
+Can you help me?|手伝ってくれますか？
+Where is the station?|駅はどこですか？
+I don't understand.|わかりません。
+Could you say that again?|もう一度言ってもらえますか？
+Let's have lunch together.|一緒にお昼を食べよう。
+I'm looking forward to it.|楽しみにしています。
+Have a nice day!|よい一日を！
+It's sunny today.|今日は晴れです。
+I like reading books.|読書が好きです。
+What do you do for fun?|趣味は何ですか？
+Take care.|気をつけてね。
+Congratulations!|おめでとう！
+Happy birthday!|誕生日おめでとう！
+Just a moment, please.|少々お待ちください。`},
+  {name:'情報',e:`computer|コンピュータ
+keyboard|キーボード
+password|パスワード
+download|ダウンロード
+software|ソフトウェア
+hardware|ハードウェア
+database|データベース
+network|ネットワーク
+algorithm|アルゴリズム
+variable|変数
+function|関数
+array|配列
+string|文字列
+boolean|真偽値
+integer|整数
+for loop|forループ
+debug|デバッグする
+compile|コンパイルする
+syntax error|構文エラー
+return value|戻り値
+open source|オープンソース
+artificial intelligence|人工知能
+machine learning|機械学習
+cloud computing|クラウドコンピューティング
+user interface|ユーザーインターフェース
+null pointer|ヌルポインタ
+Hello, World!|最初に表示するおなじみの文
+print("Hello")|Pythonで文字を表示
+console.log(x);|JavaScriptで値を表示
+let x = 10;|変数の宣言（JavaScript）
+const PI = 3.14;|定数の宣言（JavaScript）
+if (a > b) {|条件分岐の書き出し
+return true;|trueを返す
+while (i < 10)|whileループ
+for i in range(10):|Pythonのforループ
+def add(a, b):|Pythonの関数定義
+import numpy as np|ライブラリの読み込み（Python）
+x += 1;|xに1を足す
+arr[0]|配列の先頭の要素
+git commit -m "fix"|変更を記録する（Git）
+git push origin main|リモートに送る（Git）
+npm install|パッケージを入れる（Node.js）
+SELECT * FROM users;|全件を取得する（SQL）
+<div class="box">|div要素（HTML）
+#include <stdio.h>|ヘッダの読み込み（C言語）
+public static void main|main関数の宣言（Java）`}
+ ]}
 ];
+// 英語は「英文|日本語訳」を1行ずつ。英文をそのまま打つ（スペースも入力）。2文字をかな1字ぶんとしてレベル判定。
 // 全分野ミックス: 各科目を1カテゴリとして扱う
-STAGES.forEach(s=>s.cats.forEach((c,i)=>{c.id=s.id+'-'+i;c.stage=s;c.words=c.w.trim().split(/\s+/).map(e=>{const [d,y]=e.split('|');return {d,y,n:[...y].length,cat:c.name,stage:s.name};});}));
+STAGES.forEach(s=>s.cats.forEach((c,i)=>{c.id=s.id+'-'+i;c.stage=s;
+ c.words=c.e?c.e.trim().split('\n').map(e=>{const [d,m]=e.split('|');return {d,y:d,m,en:true,n:Math.ceil(d.length/2),cat:c.name,stage:s.name};})
+  :c.w.trim().split(/\s+/).map(e=>{const [d,y]=e.split('|');return {d,y,n:[...y].length,cat:c.name,stage:s.name};});}));
 STAGES.push({id:'all',name:'総合',glyph:'全',en:'ALL',cats:STAGES.map(s=>({id:'all-'+s.id,name:s.name,words:s.cats.flatMap(c=>c.words)}))});
 
 /* ===================== ローマ字判定エンジン ===================== */
@@ -505,6 +627,7 @@ function renderSetup(){
   shEl.appendChild(b);
  });
 
+ $('levelHint').hidden=S.stage!=='eng'&&S.stage!=='all';
  segment($('levels'),LEVELS.map(l=>({v:l.v,html:`${l.label}<small>${l.sub}</small>`})),S.level,v=>S.level=v);
  segment($('times'),TIMES.map(t=>({v:t,html:`${t}分`})),S.minutes,v=>S.minutes=v);
  segment($('limits'),LIMITS.map(l=>({v:l.v,html:l.label})),S.limit,v=>S.limit=v);
@@ -602,22 +725,23 @@ function showWord(first){
 function renderWord(){
  const w=G.w, sh=G.cfg.show, y=w.y;
  const sameAsReading=w.d===y;
- const main=sh.kanji?'kanji':sh.kata?'kata':sh.hira?'hira':'roma';
+ const main=w.en||sh.kanji?'kanji':sh.kata?'kata':sh.hira?'hira':'roma';
  const rows={hira:$('rHira'),kanji:$('rKanji'),kata:$('rKata'),roma:$('rRoma')};
  for(const k in rows){rows[k].classList.toggle('main',k===main);}
- rows.kanji.hidden=!sh.kanji; rows.kanji.textContent=w.d;
+ rows.kanji.hidden=!sh.kanji&&!w.en; rows.kanji.textContent=w.d;
  const doneY=y.slice(0,G.i), restY=y.slice(G.i);
- rows.hira.hidden=!sh.hira||(sh.kanji&&sameAsReading);
+ rows.hira.hidden=!sh.hira||(sh.kanji&&sameAsReading)||(w.en&&(sh.kanji||sh.roma));
  setSplit(rows.hira,doneY,restY);
- rows.kata.hidden=!sh.kata;
+ rows.kata.hidden=!sh.kata||w.en;
  setSplit(rows.kata,toKata(doneY),toKata(restY));
- rows.roma.hidden=!sh.roma;
+ rows.roma.hidden=!sh.roma&&!w.en;
+ $('rMean').hidden=!w.m; $('rMean').textContent=w.m||'';
  const cs=cands(y,G.i,G.memo);
  const m=cs.find(c=>c.r.startsWith(G.buf))||cs[0];
  const rest=m?m.r.slice(G.buf.length)+prefRoma(y,G.i+m.l,G.memo):'';
  G.expect=rest[0]||'';
  rows.roma.innerHTML='';
- rows.roma.append(span('t',G.typed),span('c',rest.slice(0,1)),span('',rest.slice(1)));
+ rows.roma.append(span('t',G.typed),span('c',rest[0]===' '?'␣':rest.slice(0,1)),span('',rest.slice(1)));
 }
 function span(c,t){const s=document.createElement('span');if(c)s.className=c;s.textContent=t;return s;}
 function setSplit(node,a,b){node.innerHTML='';node.append(span('done',a),document.createTextNode(b));}
@@ -754,7 +878,7 @@ document.addEventListener('keydown',e=>{
   if(e.isComposing||e.key==='Process'||e.keyCode===229){$('imeWarn').hidden=false;return;}
   if(e.ctrlKey||e.metaKey||e.altKey||e.key.length!==1) return;
   e.preventDefault();
-  if(e.key===' ') return;
+  if(e.key===' '&&!(G.w&&G.w.y.includes(' '))) return;
   $('imeWarn').hidden=true;
   onType(/[A-Z]/.test(e.key)?e.key.toLowerCase():e.key);
  }else if(screen==='setup'){
@@ -794,7 +918,7 @@ function lrWordEnd(ok){
  saveLearn();
 }
 
-const FINGER={};
+const FINGER={' ':'親指'};
 [['1qaz','左小指'],['2wsx','左薬指'],['3edc','左中指'],['45rtfgvb','左人差し指'],['67yuhjnm','右人差し指'],['8ik,','右中指'],['9ol.','右薬指'],['0p;/-^:@[]','右小指']]
  .forEach(([ks,f])=>[...ks].forEach(k=>FINGER[k]=f));
 function kanaTip(lab){
@@ -802,6 +926,8 @@ function kanaTip(lab){
   'ん':'次が母音・や行・な行のときは「nn」、それ以外は「n」1回でOK。','っ':'次の文字の子音を2回打ちます（例: っか→kka）。単独なら「xtu」「ltu」。',
   'ー':'長音は「-」キー（右小指、0 の右）。','、':'読点は「,」キー。','。':'句点は「.」キー。','・':'中黒は「/」キー。'};
  if(T[lab]) return T[lab];
+ if(lab===' ') return 'スペースは親指で。単語の区切りで手を止めないように。';
+ if(/^[a-z]$/i.test(lab)) return `「${lab.toLowerCase()}」は${FINGER[lab.toLowerCase()]}の担当。ホームポジションから指を伸ばす位置を確認しましょう。`;
  const opt=YOON[lab]||BASE[lab];
  if(opt) return `「${opt.join('」「')}」で入力できます。`+(/[ぁぃぅぇぉゃゅょゎ]/.test(lab[0])?'小さい文字は先に x か l。':'');
  return '記号や英数字は、キーボードの位置を目で確認してから打ちましょう。';
@@ -844,7 +970,7 @@ function coachComments(A){
  const k=A.keys[0];
  if(k){let t=`いちばん苦手なキーは「${k.k}」（${FINGER[k.k]||'指の担当なし'}）。ミス率 ${(k.m/k.n*100).toFixed(1)}%。`;if(k.conf.length)t+=`よく「${k.conf.join('」「')}」と打ち間違えています。`;out.push(t);}
  const ka=A.kana[0];
- if(ka) out.push(`苦手な文字は「${ka.k}」。${kanaTip(ka.k)}`);
+ if(ka) out.push(`苦手な文字は「${ka.k===' '?'スペース':ka.k}」。${kanaTip(ka.k)}`);
  const w=A.words[0];
  if(w) out.push(`「${w.d}」で ${w.m+w.f} 回つまずいています。練習問題で重点的に出題します。`);
  if(A.mastered) out.push(`これまでに ${A.mastered} 問を克服しました（間違えた問題を3回連続ノーミスで卒業）。`);
@@ -855,7 +981,7 @@ function gameComments(g){
  const mk=Object.entries(g.missKeys).sort((a,b)=>b[1]-a[1])[0];
  const ka=Object.entries(g.missKana).sort((a,b)=>b[1]-a[1])[0];
  if(!g.miss){out.push('ノーミス！この調子で、レベルや制限時間を一段上げてみましょう。');return out;}
- if(ka) out.push(`今回いちばんミスした文字は「${ka[0]}」（${ka[1]}回）。${kanaTip(ka[0])}`);
+ if(ka) out.push(`今回いちばんミスした文字は「${ka[0]===' '?'スペース':ka[0]}」（${ka[1]}回）。${kanaTip(ka[0])}`);
  if(mk) out.push(`キーでは「${mk[0]}」（${FINGER[mk[0]]||'指の担当なし'}）のミスが ${mk[1]} 回。`);
  const ws=[...new Set(g.missWords.map(w=>w.d))].slice(0,3);
  if(ws.length) out.push(`つまずいた問題: ${ws.map(x=>'「'+x+'」').join('')}。記録したので「AIの練習問題で復習」で出題します。`);
@@ -889,7 +1015,8 @@ const DTYPES=[
 ];
 function makeDrill(type,n){
  const A=analyze();
- const wk=A.kana.length?A.kana.slice(0,5).map(x=>x.k):DEF_KANA.slice();
+ const kk=A.kana.filter(x=>/^[ぁ-ゖー]+$/.test(x.k));
+ const wk=kk.length?kk.slice(0,5).map(x=>x.k):DEF_KANA.slice();
  const kw={};wk.forEach((k,i)=>kw[k]=5-i);
  const wkeys=A.keys.length?A.keys.slice(0,5).map(x=>x.k):['j','h','y','t'];
  const keyW={};wkeys.forEach((k,i)=>keyW[k]=(5-i)/5);
@@ -937,7 +1064,7 @@ function renderCoach(){
  const kTop=A.keys.slice(0,6), kMax=kTop.length?kTop[0].m/kTop[0].n:1;
  $('cKeys').innerHTML=kTop.length?kTop.map(x=>`<div class="wk-row"><kbd>${esc(x.k)}</kbd><div><div class="meter"><i style="width:${(x.m/x.n/kMax*100).toFixed(0)}%"></i></div><small>ミス ${x.m} / ${x.n} 打（${(x.m/x.n*100).toFixed(1)}%）· ${FINGER[x.k]||'指の担当なし'}${x.conf.length?` · よく「${esc(x.conf.join('」「'))}」と打ち間違え`:''}</small></div></div>`).join(''):'<p class="hint">まだ十分な記録がありません。</p>';
  const aTop=A.kana.slice(0,6), aMax=aTop.length?aTop[0].rate:1;
- $('cKana').innerHTML=aTop.length?aTop.map(x=>`<div class="wk-row"><span class="kn">${esc(x.k)}</span><div><div class="meter"><i style="width:${(x.rate/aMax*100).toFixed(0)}%"></i></div><small>ミス ${x.m} 回 / 打てた ${x.n} 回 · ${esc(kanaTip(x.k))}</small></div></div>`).join(''):'<p class="hint">まだ十分な記録がありません。</p>';
+ $('cKana').innerHTML=aTop.length?aTop.map(x=>`<div class="wk-row"><span class="kn">${x.k===' '?'␣':esc(x.k)}</span><div><div class="meter"><i style="width:${(x.rate/aMax*100).toFixed(0)}%"></i></div><small>ミス ${x.m} 回 / 打てた ${x.n} 回 · ${esc(kanaTip(x.k))}</small></div></div>`).join(''):'<p class="hint">まだ十分な記録がありません。</p>';
  const wl=A.words.slice(0,12);
  $('cWords').innerHTML=wl.length?wl.map(r=>`<li><b>${esc(r.d)}</b><small>${esc(r.y)} · ${esc(r.st)}／${esc(r.c)}</small><small>出題 ${r.s} 回 · ミス ${r.m} 打 · 不正解 ${r.f} 回 · 連続ノーミス ${r.cl}/3</small></li>`).join(''):'<li class="hint">間違えた問題はまだありません。</li>';
  // 練習問題
