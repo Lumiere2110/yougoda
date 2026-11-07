@@ -855,7 +855,7 @@ function showResult(){
  ];
  $('rStats').innerHTML=stats.map(s=>`<div><dt>${s[0]}</dt><dd>${s[1]}<small>${s[2]}</small></dd></div>`).join('');
  const mk=Object.entries(g.missKeys).sort((a,b)=>b[1]-a[1]).slice(0,6);
- $('rKeys').innerHTML=mk.length?mk.map(([k,n])=>`<span class="key"><kbd></kbd>×${n}</span>`).join(''):'<span class="hint">ミスなし。お見事です。</span>';
+ $('rKeys').innerHTML=mk.length?mk.map(([k,n])=>`<span class="key"><kbd></kbd>×${n}</span>`).join(''):`<span class="hint">${!total?'1打も入力されませんでした。':g.cleared?'ミスなし。お見事です。':'ミスはありませんでした。'}</span>`;
  [...$('rKeys').querySelectorAll('kbd')].forEach((kb,i)=>kb.textContent=mk[i][0]);
  const h=$('rHist');h.innerHTML='';
  if(!g.hist.length) h.innerHTML='<li class="hint">まだ1問も打ち終えていません。</li>';
@@ -980,6 +980,8 @@ function gameComments(g){
  const out=[];
  const mk=Object.entries(g.missKeys).sort((a,b)=>b[1]-a[1])[0];
  const ka=Object.entries(g.missKana).sort((a,b)=>b[1]-a[1])[0];
+ if(!g.correct&&!g.miss){out.push('1打も入力されなかったので、今回は記録していません。日本語入力（IME）がオフになっているか確認して、もう一度挑戦してみましょう。');return out;}
+ if(!g.miss&&!g.cleared){out.push('ここまでミスはありませんが、1問も打ち終える前に終了しました。最後まで打ち切ってみましょう。');return out;}
  if(!g.miss){out.push('ノーミス！この調子で、レベルや制限時間を一段上げてみましょう。');return out;}
  if(ka) out.push(`今回いちばんミスした文字は「${ka[0]===' '?'スペース':ka[0]}」（${ka[1]}回）。${kanaTip(ka[0])}`);
  if(mk) out.push(`キーでは「${mk[0]}」（${FINGER[mk[0]]||'指の担当なし'}）のミスが ${mk[1]} 回。`);
