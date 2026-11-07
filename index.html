@@ -173,6 +173,19 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .hist .ng .w{color:var(--muted)}
 .actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 .actions .hint{margin:0}
+/* 検定テスト */
+.testbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px;border-color:var(--ink)}
+.testbtn b{font-size:15px}
+.testbtn small{font-size:11.5px;color:var(--muted)}
+.tsec{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.tsec{grid-template-columns:1fr}}
+.tsec>div{border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.tsec>div.cur{border-color:var(--accent);box-shadow:0 0 0 1.5px var(--accent) inset}
+.tsec>div.done{background:var(--paper)}
+.tsec b{font-size:15px}
+.tsec .sc{font-family:var(--f-hand);color:var(--red);font-size:28px;line-height:1.1}
+.tsec small{font-size:12px;color:var(--muted)}
+.tnote{font-size:13px;color:var(--muted);line-height:1.7;margin:0}
 /* AIコーチ */
 .sheet h4{margin:0 0 8px;font-size:13px;color:var(--muted);letter-spacing:.08em}
 .coach-msg{border-left:4px solid var(--red);background:var(--red-soft);padding:12px 16px;border-radius:0 8px 8px 0;font-family:var(--f-hand);font-size:16px;line-height:1.75}
@@ -316,6 +329,7 @@ body.osk-on{padding-bottom:260px}
           <div class="pool" id="poolInfo"></div>
           <div class="best" id="bestInfo"></div>
           <button id="startBtn" class="start" type="button">スタート</button>
+          <button id="testBtn" class="ghost testbtn" type="button"><b>検定テスト（100点満点）</b><small>単語・短文・長文 各60秒。特級合格レベルで100点</small></button>
           <p class="hint">Enter でも開始できます。日本語入力（IME）はオフにしてください。スマホ・タブレットでは画面キーボードで遊べます。</p>
           <button id="coachBtn2" class="ghost" type="button">AIコーチ：苦手の分析と練習問題 →</button>
         </div>
@@ -376,6 +390,14 @@ body.osk-on{padding-bottom:260px}
         <button id="backBtn" class="ghost" type="button">設定に戻る</button>
         <p class="hint">Enter でもう一度 / Esc で設定へ</p>
       </div>
+    </div>
+  </section>
+
+  <section id="scr-test" hidden>
+    <div class="sheet">
+      <div class="sheet-head"><span class="ttl">検定テスト</span><span id="tProg"></span></div>
+      <div id="tBody"></div>
+      <div class="actions"><button id="tNext" class="start" type="button">開始</button><button id="tQuit" class="ghost" type="button">やめる</button><p class="hint">Enter で開始 / Esc でやめる</p></div>
     </div>
   </section>
 
@@ -913,31 +935,33 @@ const sfx={key:()=>tone(1400,.03,'triangle',.025),miss:()=>tone(130,.14,'sawtoot
 
 /* ===================== ゲーム本体 ===================== */
 let G=null, screen='setup';
-function showScreen(s){screen=s;['setup','play','result','coach'].forEach(n=>$('scr-'+n).hidden=n!==s);
+function showScreen(s){screen=s;['setup','play','result','coach','test'].forEach(n=>$('scr-'+n).hidden=n!==s);
  document.body.classList.toggle('playing',s==='play');applyOSK();window.scrollTo(0,0);}
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 let lastOpts=null;
 function startGame(opts){
- opts=opts&&opts.items?opts:null; lastOpts=opts;
- const prac=!!opts;
- const kana=S.input==='kana';
+ opts=opts&&opts.items?opts:null;
+ const test=opts&&opts.test||null;
+ if(!test){lastOpts=opts;T=null;}
+ const prac=!!opts&&!test;
+ const kana=S.input==='kana'&&!test;      // 検定テストはローマ字の打鍵数で採点するため常にローマ字
  let pool=prac?opts.items.slice():buildPool();
  if(prac&&kana) pool=pool.filter(kanaOK);
  if(!pool.length){if(prac)alert('この練習問題には、かなで入力できる問題がありません。');return;}
  if(document.activeElement) document.activeElement.blur();
  if(G) stopTimers();
- G={kana,kpend:'',pool:byLength(pool),pi:0,used:new Set(),prac,quota:prac?pool.length:0,title:prac?opts.title:'',missKana:{},missWords:[],score:0,correct:0,miss:0,combo:0,maxCombo:0,tier:0,comboBonus:0,cleared:0,failed:0,
-    hist:[],missKeys:{},dur:prac?0:S.minutes*60000,t0:0,running:false,done:false,timers:[],raf:0,
-    limitP:prac?null:limitParams(),mode:prac?'normal':S.mode,level:S.level,stageName:prac?'練習':stageOf(S.stage).name,
+ G={kana,test,kpend:'',pool:byLength(pool),pi:0,used:new Set(),prac,quota:prac?pool.length:0,title:prac?opts.title:'',missKana:{},missWords:[],score:0,correct:0,miss:0,combo:0,maxCombo:0,tier:0,comboBonus:0,cleared:0,failed:0,
+    hist:[],missKeys:{},dur:prac?0:test?test.sec*1000:S.minutes*60000,t0:0,running:false,done:false,timers:[],raf:0,
+    limitP:prac||test?null:limitParams(),mode:prac||test?'normal':S.mode,level:S.level,stageName:prac?'練習':stageOf(S.stage).name,
     catNames:prac?[opts.title]:stageOf(S.stage).cats.filter(c=>S.cats.includes(c.id)).map(c=>c.name),cfg:{...S,show:{...S.show}}};
  showScreen('play');
  $('hTimeL').textContent=prac?'進み具合':'残り時間';
  $('hTime').textContent=prac?`0/${G.quota}`:fmt(G.dur);$('totalBar').style.width='100%';
  ['hScore','hCombo','hMiss'].forEach(id=>$(id).textContent='0');$('hSpeed').textContent='0.0';
  updatePips();$('imeWarn').hidden=true;
- $('wInfo').textContent=prac?`AI練習 · 全${G.quota}問`:`Lv.${G.level} · ${MODES.find(m=>m.v===G.mode).name}`;
+ $('wInfo').textContent=test?`検定テスト · ${test.name}（${T.idx+1}/${TEST.length}）`:prac?`AI練習 · 全${G.quota}問`:`Lv.${G.level} · ${MODES.find(m=>m.v===G.mode).name}`;
  G.w=null;pickNext();showWord(true);
  const cd=$('countdown');cd.hidden=false;
  let n=3;const step=()=>{
@@ -1112,9 +1136,99 @@ function finish(gameover){
  stopTimers();G.done=true;G.gameover=gameover;G.elapsed=Math.max(elapsed,.001);
  const tot=G.correct+G.miss;
  if(tot>0){LD.sessions.push({t:Date.now(),kps:+(G.correct/G.elapsed).toFixed(2),acc:+(G.correct/tot).toFixed(3),sc:G.score,p:G.prac});LD.sessions=LD.sessions.slice(-60);saveLearn();}
- sfx.end();showResult();
+ sfx.end();
+ if(G.test) testSectionDone(); else showResult();
 }
-function abort(){const p=G&&G.prac;if(G){stopTimers();G.done=true;}if(p)openCoach();else{showScreen('setup');renderSetup();}}
+function abort(){T=null;const p=G&&G.prac;if(G){stopTimers();G.done=true;}if(p)openCoach();else{showScreen('setup');renderSetup();}}
+
+/* ===================== 検定テスト ===================== */
+// タイピング技能検定イータイピング・マスターの特級合格スコア（単語360・短文420・長文450）を各科目の100点とする。
+// ポイント = 正しく打った数 × 60 ÷ 秒 × 正確率²（同検定で紹介されている計算式）
+const TEST=[
+ {name:'単語',min:3,max:8,sec:60,line:360},
+ {name:'短文',min:7,max:14,sec:60,line:420},
+ {name:'長文',min:12,max:24,sec:60,line:450}
+];
+let T=null, lastTest=false;
+const testPoints=r=>{const tot=r.correct+r.miss;if(!tot)return 0;const acc=r.correct/tot;return r.correct*60/r.elapsed*acc*acc;};
+const testScore=(pts,line)=>Math.min(100,Math.floor(pts/line*1000)/10);
+function testPool(sec){
+ const st=stageOf(S.stage);
+ const fit=ws=>ws.filter(w=>w.n>=sec.min&&w.n<=sec.max);
+ let p=fit(st.cats.filter(c=>S.cats.includes(c.id)).flatMap(c=>c.words));
+ if(p.length<12) p=fit(st.cats.flatMap(c=>c.words));
+ if(p.length<12) p=fit(ALLW);
+ return p;
+}
+function startTest(){
+ lastTest=true;
+ T={idx:0,res:[],stage:S.stage,stageName:stageOf(S.stage).name};
+ showTestIntro();
+}
+function showTestIntro(){
+ const sec=TEST[T.idx];
+ $('tProg').textContent=`科目 ${T.stageName}　${T.idx+1} / ${TEST.length}`;
+ $('tBody').innerHTML=`<div class="tsec">${TEST.map((t,i)=>{
+   const r=T.res[i];
+   return `<div class="${i===T.idx?'cur':r?'done':''}"><b>${t.name}テスト</b><small>${t.sec}秒 · 特級ライン ${t.line}pt</small>${r?`<span class="sc">${r.score}点</span><small>${Math.round(r.points)}pt · 正確率 ${(r.acc*100).toFixed(1)}%</small>`:i===T.idx?'<small>次はこのテストです</small>':''}</div>`;}).join('')}</div>
+  <p class="tnote">${sec.name}を${sec.sec}秒間、できるだけ速く正確に打ってください。ミスしても打ち直せますが、正確率は2乗で効くので<b>ミスは大きく減点</b>されます。<br>ポイント = 正しく打った数 × 60 ÷ 秒 × 正確率²。特級ライン（${sec.line}pt）に届けば、この科目は100点です。3科目の平均が得点になります。${S.input==='kana'?'<br>検定の基準がローマ字の打鍵数なので、テストはローマ字入力で行います。':''}</p>`;
+ $('tNext').textContent=`${sec.name}テストを開始`;
+ showScreen('test');
+}
+function nextTestSection(){
+ if(!T) return;
+ const sec=TEST[T.idx];
+ startGame({items:testPool(sec),title:sec.name+'テスト',test:sec});
+}
+function testSectionDone(){
+ const g=G, tot=g.correct+g.miss;
+ const r={name:g.test.name,line:g.test.line,correct:g.correct,miss:g.miss,elapsed:g.elapsed,acc:tot?g.correct/tot:0,
+   kps:g.correct/g.elapsed,hist:g.hist,missKeys:g.missKeys,missKana:g.missKana,missWords:g.missWords};
+ r.points=testPoints(r); r.score=testScore(r.points,r.line);
+ T.res.push(r); T.idx++;
+ if(T.idx<TEST.length) showTestIntro(); else showTestResult();
+}
+function showTestResult(){
+ const R=T.res, total=Math.round(R.reduce((a,r)=>a+r.score,0)/R.length*10)/10;
+ const correct=R.reduce((a,r)=>a+r.correct,0), miss=R.reduce((a,r)=>a+r.miss,0), secs=R.reduce((a,r)=>a+r.elapsed,0);
+ const key='yougoda-test-best:'+T.stage, prev=store.get(key,null), isBest=total>0&&(prev==null||total>prev);
+ if(isBest) store.set(key,total);
+ const pass=R.every(r=>r.score>=100);
+ $('rHead').innerHTML=`<span class="ttl">検定テスト 結果</span><span>科目 <b>${esc(T.stageName)}</b></span><span>単語・短文・長文 <b>各60秒</b></span><span>100点 = 特級合格ライン</span>`;
+ $('rScore').textContent=total;
+ $('rBest').innerHTML=isBest?'<span class="newbest">自己ベスト更新！</span>':(prev!=null?`<span class="hint">自己ベスト ${prev} 点</span>`:'');
+ $('rStamp').innerHTML=pass?'<b>特級</b><span>合格ライン</span>':`<b style="font-size:40px">${total>=90?'惜':total>=70?'良':total>=40?'可':'—'}</b><span style="font-size:12px">特級まで ${(100-total).toFixed(1)}点</span>`;
+ const st=R.map(r=>[`${r.name}テスト`,r.score,`点（${Math.round(r.points)}pt／特級 ${r.line}pt）`]);
+ st.push(['正確率',(correct+miss?correct/(correct+miss)*100:0).toFixed(1),'%'],['打鍵速度',(correct/secs).toFixed(2),'打/秒'],['正しく打った数',correct,'打'],['ミスタイプ数',miss,'回']);
+ $('rStats').innerHTML=st.map(s=>`<div><dt>${s[0]}</dt><dd>${s[1]}<small>${s[2]}</small></dd></div>`).join('');
+ const mkAll={};R.forEach(r=>Object.entries(r.missKeys).forEach(([k,n])=>mkAll[k]=(mkAll[k]||0)+n));
+ const mk=Object.entries(mkAll).sort((a,b)=>b[1]-a[1]).slice(0,6);
+ $('rKeys').innerHTML=mk.length?mk.map(([k,n])=>`<span class="key"><kbd>${esc(k)}</kbd>×${n}</span>`).join(''):`<span class="hint">${correct?'ミスなし。お見事です。':'1打も入力されませんでした。'}</span>`;
+ const h=$('rHist');h.innerHTML='';
+ const hist=R.flatMap(r=>r.hist);
+ if(!hist.length) h.innerHTML='<li class="hint">まだ1問も打ち終えていません。</li>';
+ hist.forEach(x=>{const li=el('li',x.ok?'ok':'ng');li.append(span('mk',x.ok?'○':'×'),span('w',x.d));h.appendChild(li);});
+ // コメント
+ const out=[];
+ if(!correct) out.push('1打も入力されなかったため、0点です。');
+ else{
+  if(pass) out.push('3科目すべてで特級ラインを超えました。特級合格レベルです！');
+  const weak=R.filter(r=>r.score<100).sort((a,b)=>a.score-b.score)[0];
+  if(weak){
+   const need=weak.line/(weak.acc*weak.acc||1)/60;
+   out.push(`いちばん点が低いのは${weak.name}テスト（${weak.score}点）。今の正確率 ${(weak.acc*100).toFixed(1)}% のままなら、特級には毎秒 ${need.toFixed(1)} 打（今は ${weak.kps.toFixed(1)} 打）が必要です。`);
+   const acc=correct/(correct+miss);
+   if(acc<.97) out.push(`正確率を上げるのが近道です。正確率は2乗で効くため、${(acc*100).toFixed(1)}% → 100% にするだけでポイントは約 ${Math.round((1/(acc*acc)-1)*100)}% 増えます。`);
+   else out.push('正確さは十分です。あとはスピード。よく出る指使いを反復して、1打ごとの迷いを減らしましょう。');
+  }
+ }
+ $('rCoach').innerHTML='<div class="who">判定</div>'+out.map(t=>`<p>${esc(t)}</p>`).join('');
+ T=null;
+ showScreen('result');
+}
+$('testBtn').onclick=()=>startTest();
+$('tNext').onclick=()=>nextTestSection();
+$('tQuit').onclick=()=>{T=null;showScreen('setup');renderSetup();};
 
 /* ===================== 結果画面 ===================== */
 function showResult(){
@@ -1151,9 +1265,10 @@ function showResult(){
  $('rCoach').innerHTML='<div class="who">AIコーチのひとこと</div>'+gameComments(g).map(t=>`<p>${esc(t)}</p>`).join('');
  showScreen('result');
 }
-$('startBtn').onclick=()=>startGame();
-$('retryBtn').onclick=()=>startGame(lastOpts);
-$('drillNow').onclick=()=>startGame({items:makeDrill('mix',15),title:'AIミックス（15問）'});
+$('startBtn').onclick=()=>{lastTest=false;startGame();};
+const retry=()=>lastTest?startTest():startGame(lastOpts);
+$('retryBtn').onclick=retry;
+$('drillNow').onclick=()=>{lastTest=false;startGame({items:makeDrill('mix',15),title:'AIミックス（15問）'});};
 $('toCoach').onclick=()=>openCoach();
 $('coachBtn').onclick=$('coachBtn2').onclick=()=>openCoach();
 $('backBtn').onclick=()=>{showScreen('setup');renderSetup();};
@@ -1297,11 +1412,14 @@ document.addEventListener('keydown',e=>{
   playKey(e.key);
  }else if(screen==='setup'){
   const a=document.activeElement, onCtrl=a&&a!==document.body&&/BUTTON|INPUT/.test(a.tagName);
-  if(e.key==='Enter'&&!onCtrl){e.preventDefault();if(!$('startBtn').disabled)startGame();}
+  if(e.key==='Enter'&&!onCtrl){e.preventDefault();if(!$('startBtn').disabled){lastTest=false;startGame();}}
  }else if(screen==='result'){
   const a=document.activeElement, onBtn=a&&a.tagName==='BUTTON';
-  if((e.key==='Enter'||e.key===' ')&&!onBtn){e.preventDefault();startGame(lastOpts);}
+  if((e.key==='Enter'||e.key===' ')&&!onBtn){e.preventDefault();retry();}
   else if(e.key==='Escape'){showScreen('setup');renderSetup();}
+ }else if(screen==='test'){
+  if(e.key==='Enter'){e.preventDefault();nextTestSection();}
+  else if(e.key==='Escape'){T=null;showScreen('setup');renderSetup();}
  }else if(screen==='coach'){
   if(e.key==='Escape'){showScreen('setup');renderSetup();}
  }
@@ -1491,7 +1609,7 @@ function renderCoach(){
  $('dPreview').innerHTML=DR.items.length?DR.items.map(w=>`<span class="ditem">${esc(w.d)}<small>${esc(w.why)}</small></span>`).join(''):'<p class="hint">この種類の練習問題はまだ作れません。まずは何回か練習して、間違えた問題を記録しましょう。</p>';
  $('dStart').disabled=!DR.items.length;
 }
-$('dStart').onclick=()=>{if(DR.items.length)startGame({items:DR.items,title:`${DTYPES.find(t=>t.v===DR.type).name}（${DR.items.length}問）`});};
+$('dStart').onclick=()=>{lastTest=false;if(DR.items.length)startGame({items:DR.items,title:`${DTYPES.find(t=>t.v===DR.type).name}（${DR.items.length}問）`});};
 $('dRemake').onclick=()=>{remakeDrill();renderCoach();};
 $('cBack').onclick=()=>{showScreen('setup');renderSetup();};
 $('cReset').onclick=()=>{if(!confirm('苦手の記録をすべて消去します。よろしいですか？'))return;Object.assign(LD,{keys:{},conf:{},kana:{},words:{},sessions:[]});saveLearn();remakeDrill();renderCoach();};
