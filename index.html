@@ -218,6 +218,24 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .daystat dt{font-size:12px;color:var(--muted);font-weight:700}
 .daystat dd{margin:0;font-family:var(--f-mono);font-size:20px}
 .daystat dd small{font-size:12px;color:var(--muted);font-family:var(--f-body);margin-left:4px}
+/* くらべる（目標・平均） */
+.goal{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.goal input{font:inherit;font-family:var(--f-mono);font-size:15px;width:7em;padding:5px 8px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.goal input:focus{border-color:var(--accent);outline:none}
+.cmpbox{border:1.5px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.cmpbox h4{margin:0}
+.cmp{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px 12px;align-items:center;margin:0}
+.cmp dt{font-size:13px;color:var(--muted);font-weight:700;white-space:nowrap}
+.cmp .bar{height:10px;background:var(--paper);border-radius:3px;overflow:hidden}
+.cmp .bar i{display:block;height:100%;border-radius:0 3px 3px 0;background:var(--muted);opacity:.55}
+.cmp .bar i.me{background:var(--accent);opacity:1}
+.cmp .bar i.goal{background:var(--red);opacity:.8}
+.cmp dd{margin:0;font-family:var(--f-mono);font-size:15px;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.cmp dd small{font-family:var(--f-body);font-size:11.5px;color:var(--muted);margin-left:4px}
+.cmpmsg{margin:0;font-size:14px}
+.cmpmsg b{font-family:var(--f-hand);color:var(--red);font-size:18px}
+.cmpref{margin:0;font-size:12.5px;color:var(--muted)}
+.cmpref b{color:var(--ink);font-family:var(--f-mono)}
 /* 検定テスト */
 .testbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px;border-color:var(--ink)}
 .testbtn b{font-size:15px}
@@ -374,8 +392,9 @@ body.osk-on{padding-bottom:260px}
         <div class="startbox">
           <div class="pool" id="poolInfo"></div>
           <div class="best" id="bestInfo"></div>
+          <div class="goal"><label for="goalIn">この条件の目標点数</label><input id="goalIn" type="number" min="0" step="10" inputmode="numeric" placeholder="未設定"><span>点</span></div>
           <button id="startBtn" class="start" type="button">スタート</button>
-          <button id="testBtn" class="ghost testbtn" type="button"><b>検定テスト（100点満点）</b><small>単語・短文・長文 各60秒。特級合格レベルで100点</small></button>
+          <button id="testBtn" class="ghost testbtn" type="button"><b>検定テスト（100点満点）</b><small>全科目から出題・単語/短文/長文 各60秒。特級合格レベルで100点</small></button>
           <p class="hint">Enter でも開始できます。日本語入力（IME）はオフにしてください。スマホ・タブレットでは画面キーボードで遊べます。</p>
           <button id="coachBtn2" class="ghost" type="button">AIコーチ：苦手の分析と練習問題 →</button>
         </div>
@@ -429,6 +448,7 @@ body.osk-on{padding-bottom:260px}
         <div><h4>出題された問題</h4><ul class="hist" id="rHist"></ul></div>
       </div>
       <div class="coach-msg" id="rCoach"></div>
+      <div class="cmpbox" id="rCmp"></div>
       <div class="rankbox" id="rRank"></div>
       <div class="actions">
         <button id="retryBtn" class="start" type="button">もう一度</button>
@@ -488,7 +508,15 @@ body.osk-on{padding-bottom:260px}
 <script>
 /* ===================== 問題データ（表示|よみ） ===================== */
 const STAGES = [
- {id:'math',name:'数学',glyph:'数',en:'MATH',cats:[
+ {id:'life',name:'日常',glyph:'日',en:'DAILY LIFE',cats:[
+  {name:'あいさつ・会話',w:`おはよう|おはよう こんにちは|こんにちは こんばんは|こんばんは ありがとう|ありがとう ごめんなさい|ごめんなさい いただきます|いただきます ごちそうさま|ごちそうさま いってきます|いってきます いってらっしゃい|いってらっしゃい ただいま|ただいま おかえりなさい|おかえりなさい おやすみなさい|おやすみなさい お疲れさま|おつかれさま よろしくね|よろしくね はじめまして|はじめまして 失礼します|しつれいします お元気ですか|おげんきですか また明日ね|またあしたね 久しぶりだね|ひさしぶりだね 気をつけてね|きをつけてね 大丈夫だよ|だいじょうぶだよ どういたしまして|どういたしまして お先に失礼します|おさきにしつれいします よろしくお願いします|よろしくおねがいします 今日はいい天気ですね|きょうはいいてんきですね 最近どうしてる|さいきんどうしてる また今度遊ぼうね|またこんどあそぼうね 今日はありがとうございました|きょうはありがとうございました 遅れてごめんなさい|おくれてごめんなさい ちょっと待ってください|ちょっとまってください もう一度言ってください|もういちどいってください お誕生日おめでとう|おたんじょうびおめでとう 合格おめでとうございます|ごうかくおめでとうございます 体に気をつけてください|からだにきをつけてください 今度一緒にご飯に行こう|こんどいっしょにごはんにいこう 困ったときはお互いさま|こまったときはおたがいさま 何かあったら連絡してね|なにかあったられんらくしてね 今日も一日がんばろう|きょうもいちにちがんばろう 来週の予定はどうですか|らいしゅうのよていはどうですか もしもし|もしもし さようなら|さようなら いらっしゃいませ|いらっしゃいませ かしこまりました|かしこまりました 申し訳ありません|もうしわけありません 恐れ入ります|おそれいります お邪魔します|おじゃまします お大事に|おだいじに おめでとう|おめでとう ようこそ|ようこそ ご無沙汰しています|ごぶさたしています お世話になります|おせわになります 承知しました|しょうちしました なるほど|なるほど 本当にありがとう|ほんとうにありがとう どうぞよろしく|どうぞよろしく ごめんね|ごめんね 大丈夫ですか|だいじょうぶですか 元気だよ|げんきだよ また来てね|またきてね 楽しかったね|たのしかったね いい一日を|いいいちにちを 気にしないで|きにしないで お先にどうぞ|おさきにどうぞ ちょっといいですか|ちょっといいですか お手伝いしましょうか|おてつだいしましょうか 少々お待ちください|しょうしょうおまちください ご来店ありがとうございます|ごらいてんありがとうございます 道を教えてもらえますか|みちをおしえてもらえますか 写真を撮ってもらえますか|しゃしんをとってもらえますか 今日はお疲れさまでした|きょうはおつかれさまでした 明日もよろしくお願いします|あしたもよろしくおねがいします 誘ってくれてありがとう|さそってくれてありがとう ゆっくり休んでね|ゆっくりやすんでね 風邪をひかないようにね|かぜをひかないようにね 久しぶりに会えてうれしい|ひさしぶりにあえてうれしい 遠慮しないでね|えんりょしないでね 今から行くね|いまからいくね 着いたら連絡するね|ついたられんらくするね 何時に待ち合わせる|なんじにまちあわせる 駅の改札で待っているね|えきのかいさつでまっているね 少し遅れそうです|すこしおくれそうです 話を聞いてくれてありがとう|はなしをきいてくれてありがとう 応援しているよ|おうえんしているよ 一緒にがんばろうね|いっしょにがんばろうね お気持ちだけいただきます|おきもちだけいただきます よいお年をお迎えください|よいおとしをおむかえください 明けましておめでとうございます|あけましておめでとうございます お変わりありませんか|おかわりありませんか またお会いしましょう|またおあいしましょう`},
+  {name:'食べ物・料理',w:`ごはん|ごはん みそ汁|みそしる 卵焼き|たまごやき 焼き魚|やきざかな 納豆|なっとう おにぎり|おにぎり カレーライス|かれーらいす ラーメン|らーめん お寿司|おすし 天ぷら|てんぷら 唐揚げ|からあげ ハンバーグ|はんばーぐ オムライス|おむらいす お好み焼き|おこのみやき たこ焼き|たこやき 肉じゃが|にくじゃが 冷蔵庫|れいぞうこ 電子レンジ|でんしれんじ フライパン|ふらいぱん まな板|まないた 包丁で野菜を切る|ほうちょうでやさいをきる 野菜を炒める|やさいをいためる お湯を沸かす|おゆをわかす お米を炊く|おこめをたく 朝ごはんを食べる|あさごはんをたべる お弁当を作る|おべんとうをつくる 味見をする|あじみをする 塩とこしょうで味をととのえる|しおとこしょうであじをととのえる 卵を割ってよく混ぜる|たまごをわってよくまぜる 弱火でじっくり煮込む|よわびでじっくりにこむ 冷蔵庫から牛乳を出す|れいぞうこからぎゅうにゅうをだす 食べ終わったら食器を洗う|たべおわったらしょっきをあらう 今日の晩ごはんはカレーです|きょうのばんごはんはかれーです 野菜をたくさん食べよう|やさいをたくさんたべよう 甘いものが食べたい|あまいものがたべたい 賞味期限を確認する|しょうみきげんをかくにんする 好き嫌いせずに食べる|すききらいせずにたべる 家族で鍋を囲む|かぞくでなべをかこむ 食パン|しょくぱん 目玉焼き|めだまやき 味噌ラーメン|みそらーめん 醤油|しょうゆ 砂糖|さとう お茶|おちゃ 牛乳|ぎゅうにゅう 果物|くだもの 野菜炒め|やさいいため 焼きそば|やきそば うどん|うどん ざるそば|ざるそば 餃子|ぎょうざ 親子丼|おやこどん 牛丼|ぎゅうどん 豚汁|とんじる 茶わん蒸し|ちゃわんむし 冷やし中華|ひやしちゅうか ショートケーキ|しょーとけーき プリン|ぷりん アイスクリーム|あいすくりーむ おやつ|おやつ 炊飯器|すいはんき 土鍋|どなべ お皿|おさら お箸|おはし 献立|こんだて 調味料|ちょうみりょう 隠し味|かくしあじ 作り置き|つくりおき 皮をむく|かわをむく 水で洗う|みずであらう 油で揚げる|あぶらであげる 冷凍庫に入れる|れいとうこにいれる お湯を注ぐ|おゆをそそぐ 鍋に火をかける|なべにひをかける お米を研ぐ|おこめをとぐ 野菜を細かく刻む|やさいをこまかくきざむ 魚をグリルで焼く|さかなをぐりるでやく 冷めないうちに食べてね|さめないうちにたべてね お腹がいっぱいになった|おなかがいっぱいになった おかわりをお願いします|おかわりをおねがいします 夕飯の材料を買いに行く|ゆうはんのざいりょうをかいにいく 残ったおかずを温め直す|のこったおかずをあたためなおす レシピを見ながら作る|れしぴをみながらつくる 家族の好きな料理を作る|かぞくのすきなりょうりをつくる 朝はパンとコーヒー|あさはぱんとこーひー 野菜から先に食べる|やさいからさきにたべる 旬の果物はおいしい|しゅんのくだものはおいしい 外食はたまにする|がいしょくはたまにする`},
+  {name:'家・生活',w:`洗濯|せんたく 掃除|そうじ 料理|りょうり 買い物|かいもの 洗濯機|せんたくき 掃除機|そうじき エアコン|えあこん 布団|ふとん 歯ブラシ|はぶらし シャンプー|しゃんぷー 玄関|げんかん 台所|だいどころ お風呂|おふろ ベランダ|べらんだ 目覚まし時計|めざましどけい 早起きする|はやおきする 顔を洗う|かおをあらう 歯をみがく|はをみがく 洗濯物を干す|せんたくものをほす 部屋を片付ける|へやをかたづける ゴミを出す|ごみをだす お風呂に入る|おふろにはいる 布団をたたむ|ふとんをたたむ 窓を開けて換気する|まどをあけてかんきする 燃えるゴミは月曜日です|もえるごみはげつようびです 電気を消してから寝る|でんきをけしてからねる 毎朝七時に起きる|まいあさしちじにおきる 部屋の掃除機をかける|へやのそうじきをかける 乾いた洗濯物をたたむ|かわいたせんたくものをたたむ 鍵をかけたか確認する|かぎをかけたかかくにんする エアコンの温度を下げる|えあこんのおんどをさげる 天気がいいので布団を干す|てんきがいいのでふとんをほす 夜ふかしせずに早く寝る|よふかしせずにはやくねる 家族と分担して家事をする|かぞくとぶんたんしてかじをする 歯みがき|はみがき 着替え|きがえ 寝坊|ねぼう 昼寝|ひるね 留守番|るすばん 洗面所|せんめんじょ 寝室|しんしつ 押し入れ|おしいれ 物干し|ものほし 洗剤|せんざい 雑巾|ぞうきん 電子レンジで温める|でんしれんじであたためる 照明|しょうめい カーテン|かーてん 冷暖房|れいだんぼう 加湿器|かしつき 合鍵|あいかぎ 宅配便|たくはいびん 回覧板|かいらんばん 粗大ごみ|そだいごみ 資源ごみ|しげんごみ 床をふく|ゆかをふく 窓をみがく|まどをみがく 植木に水をやる|うえきにみずをやる 布団を敷く|ふとんをしく 靴をそろえる|くつをそろえる シャツにアイロンをかける|しゃつにあいろんをかける 洗濯物を取り込む|せんたくものをとりこむ 玄関の鍵を閉める|げんかんのかぎをしめる お風呂を沸かす|おふろをわかす 排水口を掃除する|はいすいこうをそうじする 冷蔵庫の中を整理する|れいぞうこのなかをせいりする 電球を新しく取り替える|でんきゅうをあたらしくとりかえる 荷物を受け取る|にもつをうけとる 不在票が入っていた|ふざいひょうがはいっていた 寝る前にスマホを見ない|ねるまえにすまほをみない 朝起きたらカーテンを開ける|あさおきたらかーてんをあける 週末にまとめて掃除する|しゅうまつにまとめてそうじする ペットに餌をあげる|ぺっとにえさをあげる 犬の散歩に行く|いぬのさんぽにいく 部屋の模様替えをする|へやのもようがえをする 押し入れから扇風機を出す|おしいれからせんぷうきをだす 引っ越しの準備をする|ひっこしのじゅんびをする 段ボールに荷物を詰める|だんぼーるににもつをつめる 光熱費を節約する|こうねつひをせつやくする 早寝早起きを心がける|はやねはやおきをこころがける 体調が悪いので休む|たいちょうがわるいのでやすむ 薬を飲んで早めに寝る|くすりをのんではやめにねる 防災グッズを用意する|ぼうさいぐっずをよういする 毎朝ゴミを出してから出かける|まいあさごみをだしてからでかける`},
+  {name:'買い物・まち',w:`コンビニ|こんびに スーパー|すーぱー 駅前|えきまえ 銀行|ぎんこう 郵便局|ゆうびんきょく 病院|びょういん 薬局|やっきょく 図書館|としょかん 公園|こうえん 交差点|こうさてん 信号|しんごう 横断歩道|おうだんほどう 財布|さいふ お釣り|おつり レシート|れしーと ポイントカード|ぽいんとかーど 電子マネー|でんしまねー 定期券|ていきけん 切符を買う|きっぷをかう 電車に乗る|でんしゃにのる バスを降りる|ばすをおりる 道を聞く|みちをきく 会計をする|かいけいをする レジに並ぶ|れじにならぶ 袋はいりません|ふくろはいりません これはいくらですか|これはいくらですか カードで払えますか|かーどではらえますか 駅までの道を教えてください|えきまでのみちをおしえてください 次の駅で乗り換える|つぎのえきでのりかえる 信号が青になったら渡る|しんごうがあおになったらわたる 特売の野菜を買う|とくばいのやさいをかう 図書館で本を借りる|としょかんでほんをかりる 郵便局で荷物を送る|ゆうびんきょくでにもつをおくる 病院の予約をする|びょういんのよやくをする 試着してもいいですか|しちゃくしてもいいですか 商店街|しょうてんがい 百貨店|ひゃっかてん 本屋|ほんや 花屋|はなや パン屋|ぱんや 美容院|びよういん 映画館|えいがかん 市役所|しやくしょ 交番|こうばん 消防署|しょうぼうしょ 歩道橋|ほどうきょう 踏切|ふみきり 駐車場|ちゅうしゃじょう 駐輪場|ちゅうりんじょう 自動販売機|じどうはんばいき 値札|ねふだ 割引|わりびき 品切れ|しなぎれ 現金|げんきん 両替|りょうがえ 試食|ししょく 送料無料|そうりょうむりょう 買い物袋|かいものぶくろ ネット通販|ねっとつうはん 返品する|へんぴんする 予約する|よやくする 列に並ぶ|れつにならぶ お釣りをもらう|おつりをもらう エレベーターに乗る|えれべーたーにのる タクシーを呼ぶ|たくしーをよぶ 地下鉄に乗り換える|ちかてつにのりかえる 終電に間に合う|しゅうでんにまにあう 右に曲がってまっすぐ進む|みぎにまがってまっすぐすすむ 二つ目の角を左に曲がる|ふたつめのかどをひだりにまがる 駅前のコンビニで待ち合わせ|えきまえのこんびにでまちあわせ 閉店時間が近い|へいてんじかんがちかい 半額シールの貼られた弁当|はんがくしーるのはられたべんとう ポイントカードはお持ちですか|ぽいんとかーどはおもちですか お会計は別々でお願いします|おかいけいはべつべつでおねがいします 袋にお入れしましょうか|ふくろにおいれしましょうか 新しい靴を買いに行く|あたらしいくつをかいにいく 誕生日プレゼントを選ぶ|たんじょうびぷれぜんとをえらぶ 銀行でお金を下ろす|ぎんこうでおかねをおろす 図書館で本を返す|としょかんでほんをかえす 市役所で手続きをする|しやくしょでてつづきをする 落とし物を交番に届ける|おとしものをこうばんにとどける 雨の日はバスで行く|あめのひはばすでいく 自転車で駅まで行く|じてんしゃでえきまでいく 道に迷ってしまった|みちにまよってしまった 地図アプリで場所を調べる|ちずあぷりでばしょをしらべる`},
+  {name:'学校・仕事',w:`教室|きょうしつ 黒板|こくばん 宿題|しゅくだい 時間割|じかんわり 給食|きゅうしょく 部活動|ぶかつどう 文化祭|ぶんかさい 体育祭|たいいくさい 定期テスト|ていきてすと 夏休み|なつやすみ 先生|せんせい 友達|ともだち 会社|かいしゃ 会議|かいぎ 名刺|めいし 残業|ざんぎょう 出張|しゅっちょう 締め切り|しめきり 資料を作る|しりょうをつくる 宿題を提出する|しゅくだいをていしゅつする 授業に遅れる|じゅぎょうにおくれる ノートをとる|のーとをとる テスト勉強をする|てすとべんきょうをする 図書室で調べる|としょしつでしらべる 部活動の練習に行く|ぶかつどうのれんしゅうにいく 明日までに宿題を終わらせる|あしたまでにしゅくだいをおわらせる 先生に質問をする|せんせいにしつもんをする 会議の資料を準備する|かいぎのしりょうをじゅんびする 取引先にメールを送る|とりひきさきにめーるをおくる 今日の予定を確認する|きょうのよていをかくにんする 締め切りに間に合わせる|しめきりにまにあわせる 報告と連絡と相談|ほうこくとれんらくとそうだん チームで協力して進める|ちーむできょうりょくしてすすめる 来月から新しい仕事を始める|らいげつからあたらしいしごとをはじめる 教科書|きょうかしょ 筆箱|ふでばこ 消しゴム|けしごむ 鉛筆|えんぴつ 定規|じょうぎ 時計|とけい 遠足|えんそく 修学旅行|しゅうがくりょこう 入学式|にゅうがくしき 卒業式|そつぎょうしき 始業式|しぎょうしき 日直|にっちょく 掃除当番|そうじとうばん 委員会|いいんかい 生徒会|せいとかい 通知表|つうちひょう 保護者会|ほごしゃかい 自習|じしゅう 復習|ふくしゅう 予習|よしゅう 同僚|どうりょう 上司|じょうし 後輩|こうはい 先輩|せんぱい 打ち合わせ|うちあわせ 報告書|ほうこくしょ 有給休暇|ゆうきゅうきゅうか 通勤電車|つうきんでんしゃ 出勤する|しゅっきんする 退勤する|たいきんする 黒板の字をノートに写す|こくばんのじをのーとにうつす 手を挙げて発表する|てをあげてはっぴょうする 宿題を忘れてしまった|しゅくだいをわすれてしまった テストの範囲を確認する|てすとのはんいをかくにんする 漢字の書き取りをする|かんじのかきとりをする 計算問題を解く|けいさんもんだいをとく 夏休みの自由研究|なつやすみのじゆうけんきゅう 運動会でリレーに出る|うんどうかいでりれーにでる 友達と一緒に下校する|ともだちといっしょにげこうする 朝の会で連絡を聞く|あさのかいでれんらくをきく 会議で意見を述べる|かいぎでいけんをのべる 資料を印刷して配る|しりょうをいんさつしてくばる 電話で予定を調整する|でんわでよていをちょうせいする 名刺を交換する|めいしをこうかんする 仕事の優先順位を決める|しごとのゆうせんじゅんいをきめる 今日の作業を報告する|きょうのさぎょうをほうこくする 新しいプロジェクトが始まる|あたらしいぷろじぇくとがはじまる 面接の練習をする|めんせつのれんしゅうをする 資格の勉強を続ける|しかくのべんきょうをつづける 在宅で仕事をする|ざいたくでしごとをする`},
+  {name:'趣味・季節',w:`読書|どくしょ 映画|えいが 音楽|おんがく 旅行|りょこう 写真|しゃしん 散歩|さんぽ ゲーム|げーむ サッカー|さっかー 野球|やきゅう 水泳|すいえい ギター|ぎたー 料理教室|りょうりきょうしつ 桜|さくら 花火|はなび 紅葉|こうよう 雪だるま|ゆきだるま お花見|おはなみ 夏祭り|なつまつり お正月|おしょうがつ 天気予報|てんきよほう 梅雨入り|つゆいり 傘を持っていく|かさをもっていく 映画を見に行く|えいがをみにいく 音楽を聞く|おんがくをきく 写真を撮る|しゃしんをとる 友達と旅行に行く|ともだちとりょこうにいく 週末は家でゆっくりする|しゅうまつはいえでゆっくりする 春になると桜が咲く|はるになるとさくらがさく 夏休みに海で泳ぐ|なつやすみにうみでおよぐ 秋は紅葉がきれいです|あきはこうようがきれいです 冬は雪が降って寒い|ふゆはゆきがふってさむい 明日は雨が降るらしい|あしたはあめがふるらしい 休みの日に公園を散歩する|やすみのひにこうえんをさんぽする 毎日少しずつ本を読む|まいにちすこしずつほんをよむ 好きな歌手のライブに行く|すきなかしゅのらいぶにいく 読書感想文|どくしょかんそうぶん 映画鑑賞|えいがかんしょう 音楽鑑賞|おんがくかんしょう 釣り堀|つりぼり 登山|とざん キャンプ|きゃんぷ ジョギング|じょぎんぐ 筋トレ|きんとれ 将棋|しょうぎ 囲碁教室|いごきょうしつ 手芸|しゅげい 園芸|えんげい 絵を描く|えをかく ピアノを弾く|ぴあのをひく 歌を歌う|うたをうたう 春休み|はるやすみ 冬休み|ふゆやすみ 花見|はなみ 紅葉狩り|もみじがり 雪合戦|ゆきがっせん 海水浴|かいすいよく 夕焼け|ゆうやけ 入道雲|にゅうどうぐも 夕立|ゆうだち 台風が近づく|たいふうがちかづく 雪が積もる|ゆきがつもる 桜が満開になる|さくらがまんかいになる 蝉が鳴いている|せみがないている 虫の声が聞こえる|むしのこえがきこえる 星がきれいに見える|ほしがきれいにみえる 日が短くなってきた|ひがみじかくなってきた 朝晩が冷え込む|あさばんがひえこむ 梅雨が明けて夏が来る|つゆがあけてなつがくる 大みそかに年越しそばを食べる|おおみそかにとしこしそばをたべる 初詣に神社へ行く|はつもうでにじんじゃへいく 七夕に願いごとを書く|たなばたにねがいごとをかく 夏祭りで浴衣を着る|なつまつりでゆかたをきる 秋は読書にぴったり|あきはどくしょにぴったり 週末に友達とテニスをする|しゅうまつにともだちとてにすをする 好きな漫画の新刊が出た|すきなまんがのしんかんがでた ゲームで友達と対戦する|げーむでともだちとたいせんする 写真を撮りに出かける|しゃしんをとりにでかける 新しい趣味を見つけたい|あたらしいしゅみをみつけたい 温泉でゆっくり休む|おんせんでゆっくりやすむ 旅行の計画を立てる|りょこうのけいかくをたてる 動物園でパンダを見る|どうぶつえんでぱんだをみる 水族館でイルカを見る|すいぞくかんでいるかをみる 日曜日は家族で出かける|にちようびはかぞくででかける 星空を見ながら散歩する|ほしぞらをみながらさんぽする サイクリング|さいくりんぐ`}
+ ]}
+ ,{id:'math',name:'数学',glyph:'数',en:'MATH',cats:[
   {name:'数と式・代数',w:`因数分解|いんすうぶんかい 素数|そすう 整数|せいすう 自然数|しぜんすう 有理数|ゆうりすう 無理数|むりすう 虚数|きょすう 複素数|ふくそすう 絶対値|ぜったいち 平方根|へいほうこん 方程式|ほうていしき 不等式|ふとうしき 連立方程式|れんりつほうていしき 二次関数|にじかんすう 最大公約数|さいだいこうやくすう 最小公倍数|さいしょうこうばいすう 行列式|ぎょうれつしき 逆行列|ぎゃくぎょうれつ 固有値|こゆうち 等差数列|とうさすうれつ 等比数列|とうひすうれつ 数学的帰納法|すうがくてききのうほう 解の公式を使う|かいのこうしきをつかう 2次方程式を解く|2じほうていしきをとく x+3=7|x+3=7 判別式が負になる|はんべつしきがふになる 対数|たいすう 指数法則|しすうほうそく 二項定理|にこうていり ベクトル空間|べくとるくうかん 素因数分解する|そいんすうぶんかいする 3の倍数|3のばいすう 係数|けいすう 定数項|ていすうこう 単項式|たんこうしき 多項式|たこうしき 展開|てんかい 恒等式|こうとうしき 剰余の定理|じょうよのていり 因数定理|いんすうていり 解と係数の関係|かいとけいすうのかんけい 共役複素数|きょうやくふくそすう 必要条件|ひつようじょうけん 十分条件|じゅうぶんじょうけん 背理法|はいりほう 対偶|たいぐう 集合|しゅうごう 部分集合|ぶぶんしゅうごう 階差数列|かいさすうれつ 漸化式|ぜんかしき 常用対数|じょうようたいすう 単位行列|たんいぎょうれつ 二次方程式の解を求める|にじほうていしきのかいをもとめる 判別式で解の個数を調べる|はんべつしきでかいのこすうをしらべる 因数分解して式を簡単にする|いんすうぶんかいしてしきをかんたんにする 不等式の解の範囲を求める|ふとうしきのかいのはんいをもとめる 等差数列の和の公式|とうさすうれつのわのこうしき 等比数列の一般項を求める|とうひすうれつのいっぱんこうをもとめる 漸化式から一般項を求める|ぜんかしきからいっぱんこうをもとめる 複素数平面上の点|ふくそすうへいめんじょうのてん 背理法で無理数であることを示す|はいりほうでむりすうであることをしめす 行列の積を計算する|ぎょうれつのせきをけいさんする 対数の底を変換する|たいすうのていをへんかんする 必要十分条件を確かめる|ひつようじゅうぶんじょうけんをたしかめる`},
   {name:'図形・幾何',w:`三角形|さんかくけい 円周率|えんしゅうりつ 正弦定理|せいげんていり 余弦定理|よげんていり 三平方の定理|さんへいほうのていり 相似|そうじ 合同|ごうどう 垂線|すいせん 対角線|たいかくせん 外接円|がいせつえん 内接円|ないせつえん 重心|じゅうしん 外心|がいしん 二等辺三角形|にとうへんさんかくけい 平行四辺形|へいこうしへんけい 接線の方程式|せっせんのほうていしき 円周角の定理|えんしゅうかくのていり 扇形の面積|おうぎがたのめんせき 角の二等分線|かくのにとうぶんせん 球の体積を求める|きゅうのたいせきをもとめる 座標平面|ざひょうへいめん 内積|ないせき 外積|がいせき 弧度法|こどほう 正多面体|せいためんたい メネラウスの定理|めねらうすのていり 円周角|えんしゅうかく 中心角|ちゅうしんかく 垂心|すいしん 内心|ないしん 傍心|ぼうしん 中点連結定理|ちゅうてんれんけつていり 方べきの定理|ほうべきのていり 位置ベクトル|いちべくとる 単位ベクトル|たんいべくとる 法線ベクトル|ほうせんべくとる 楕円|だえん 双曲線|そうきょくせん 放物線|ほうぶつせん 焦点|しょうてん 回転体|かいてんたい 表面積|ひょうめんせき 錐体の体積|すいたいのたいせき チェバの定理|ちぇばのていり 三角形の面積を求める|さんかくけいのめんせきをもとめる 円に内接する四角形|えんにないせつするしかくけい 二つの三角形は相似である|ふたつのさんかくけいはそうじである ベクトルの内積を計算する|べくとるのないせきをけいさんする 点と直線の距離の公式|てんとちょくせんのきょりのこうしき 円と直線の位置関係|えんとちょくせんのいちかんけい 正弦定理で辺の長さを求める|せいげんていりでへんのながさをもとめる 空間ベクトルで垂直を示す|くうかんべくとるですいちょくをしめす 楕円の焦点の座標を求める|だえんのしょうてんのざひょうをもとめる 円錐の側面積を求める|えんすいのそくめんせきをもとめる 平行線と線分の比|へいこうせんとせんぶんのひ 三角形の外接円の半径|さんかくけいのがいせつえんのはんけい`},
   {name:'微分・積分',w:`微分|びぶん 積分|せきぶん 極限|きょくげん 導関数|どうかんすう 不定積分|ふていせきぶん 定積分|ていせきぶん 極値|きょくち 変曲点|へんきょくてん 連続関数|れんぞくかんすう 収束|しゅうそく 発散|はっさん 数列の極限|すうれつのきょくげん 置換積分|ちかんせきぶん 部分積分|ぶぶんせきぶん 合成関数の微分|ごうせいかんすうのびぶん 偏微分|へんびぶん 微分方程式|びぶんほうていしき テイラー展開|ていらーてんかい 接線の傾き|せっせんのかたむき 平均値の定理|へいきんちのていり グラフの増減を調べる|ぐらふのぞうげんをしらべる 無限級数|むげんきゅうすう 自然対数|しぜんたいすう ネイピア数|ねいぴあすう 面積を積分で求める|めんせきをせきぶんでもとめる 三角関数|さんかくかんすう 右側極限|みぎがわきょくげん 微分係数|びぶんけいすう 増減表|ぞうげんひょう 第2次導関数|だい2じどうかんすう 凹凸|おうとつ 漸近線|ぜんきんせん 区分求積法|くぶんきゅうせきほう 回転体の体積|かいてんたいのたいせき 原始関数|げんしかんすう 逆関数|ぎゃくかんすう 媒介変数|ばいかいへんすう 曲線の長さ|きょくせんのながさ 積の微分|せきのびぶん 商の微分|しょうのびぶん はさみうちの原理|はさみうちのげんり 中間値の定理|ちゅうかんちのていり 対数微分法|たいすうびぶんほう 重積分|じゅうせきぶん 関数の最大値と最小値を求める|かんすうのさいだいちとさいしょうちをもとめる 導関数の符号で増減を調べる|どうかんすうのふごうでぞうげんをしらべる 曲線と直線で囲まれた面積|きょくせんとちょくせんでかこまれためんせき 定積分の値を計算する|ていせきぶんのあたいをけいさんする 置換積分で式を変形する|ちかんせきぶんでしきをへんけいする 部分積分を二回使う|ぶぶんせきぶんをにかいつかう 極限値が存在するか調べる|きょくげんちがそんざいするかしらべる 無限等比級数の和を求める|むげんとうひきゅうすうのわをもとめる 接線と法線の方程式|せっせんとほうせんのほうていしき 回転体の体積を積分で求める|かいてんたいのたいせきをせきぶんでもとめる 微分方程式を解いて関数を求める|びぶんほうていしきをといてかんすうをもとめる 速度を積分して位置を求める|そくどをせきぶんしていちをもとめる`},
@@ -528,14 +556,6 @@ const STAGES = [
   {name:'セキュリティ',w:`暗号|あんごう 公開鍵|こうかいかぎ 秘密鍵|ひみつかぎ 共通鍵暗号|きょうつうかぎあんごう 公開鍵暗号方式|こうかいかぎあんごうほうしき 電子署名|でんししょめい 認証|にんしょう 二段階認証|にだんかいにんしょう 多要素認証|たようそにんしょう パスワード|ぱすわーど フィッシング|ふぃっしんぐ マルウェア|まるうぇあ ウイルス|ういるす ランサムウェア|らんさむうぇあ 脆弱性|ぜいじゃくせい 不正アクセス|ふせいあくせす ハッシュ関数|はっしゅかんすう 改ざん検知|かいざんけんち ソーシャルエンジニアリング|そーしゃるえんじにありんぐ アクセス権限|あくせすけんげん バックアップを取る|ばっくあっぷをとる 情報漏えい|じょうほうろうえい デジタル証明書|でじたるしょうめいしょ 総当たり攻撃|そうあたりこうげき セキュリティパッチ|せきゅりてぃぱっち 最小権限の原則|さいしょうけんげんのげんそく ID|ID 生体認証|せいたいにんしょう ワンタイムパスワード|わんたいむぱすわーど なりすまし|なりすまし 標的型攻撃|ひょうてきがたこうげき スパムメール|すぱむめーる トロイの木馬|とろいのもくば ワーム|わーむ スパイウェア|すぱいうぇあ ゼロデイ攻撃|ぜろでいこうげき DoS攻撃|DoSこうげき SQLインジェクション|SQLいんじぇくしょん クロスサイトスクリプティング|くろすさいとすくりぷてぃんぐ 暗号鍵|あんごうかぎ 復号|ふくごう 情報セキュリティポリシー|じょうほうせきゅりてぃぽりしー 機密性|きみつせい 完全性|かんぜんせい 可用性|かようせい パスワードを使い回さない|ぱすわーどをつかいまわさない 不審なメールの添付を開かない|ふしんなめーるのてんぷをひらかない 二段階認証を設定する|にだんかいにんしょうをせっていする ソフトウェアを最新に更新する|そふとうぇあをさいしんにこうしんする 公開鍵で暗号化して送る|こうかいかぎであんごうかしておくる 秘密鍵は自分だけが持つ|ひみつかぎはじぶんだけがもつ 電子署名で改ざんを検知する|でんししょめいでかいざんをけんちする ウイルス対策ソフトを入れる|ういるすたいさくそふとをいれる 重要なデータをバックアップする|じゅうようなでーたをばっくあっぷする 公共の無線LANに注意する|こうきょうのむせんLANにちゅういする アクセス権限を最小にする|あくせすけんげんをさいしょうにする 個人情報を適切に管理する|こじんじょうほうをてきせつにかんりする`},
   {name:'データ・AI',w:`人工知能|じんこうちのう 機械学習|きかいがくしゅう 深層学習|しんそうがくしゅう 教師あり学習|きょうしありがくしゅう 強化学習|きょうかがくしゅう ニューラルネットワーク|にゅーらるねっとわーく データベース|でーたべーす 主キー|しゅきー 正規化|せいきか 過学習|かがくしゅう 学習率|がくしゅうりつ 損失関数|そんしつかんすう 勾配降下法|こうばいこうかほう 特徴量|とくちょうりょう ビッグデータ|びっぐでーた データマイニング|でーたまいにんぐ 自然言語処理|しぜんげんごしょり 画像認識|がぞうにんしき 生成AI|せいせいAI 大規模言語モデル|だいきぼげんごもでる 訓練データ|くんれんでーた テストデータで評価する|てすとでーたでひょうかする クラスタリング|くらすたりんぐ 回帰と分類|かいきとぶんるい 外れ値|はずれち SQL文を実行する|SQLぶんをじっこうする 教師なし学習|きょうしなしがくしゅう 分類|ぶんるい 決定木|けっていぎ ランダムフォレスト|らんだむふぉれすと サポートベクターマシン|さぽーとべくたーましん 畳み込みニューラルネットワーク|たたみこみにゅーらるねっとわーく 活性化関数|かっせいかかんすう 誤差逆伝播法|ごさぎゃくでんぱほう バッチサイズ|ばっちさいず エポック数|えぽっくすう 正解率|せいかいりつ 適合率|てきごうりつ 再現率|さいげんりつ 次元削減|じげんさくげん 主成分分析|しゅせいぶんぶんせき 前処理|まえしょり 欠損値|けっそんち テーブル|てーぶる 外部キー|がいぶきー プロンプト|ぷろんぷと データを訓練用とテスト用に分ける|でーたをくんれんようとてすとようにわける 機械学習でモデルを訓練する|きかいがくしゅうでもでるをくんれんする 過学習を防ぐために正則化する|かがくしゅうをふせぐためにせいそくかする 学習率を小さくして調整する|がくしゅうりつをちいさくしてちょうせいする 損失関数の値を最小にする|そんしつかんすうのあたいをさいしょうにする ニューラルネットワークの層を重ねる|にゅーらるねっとわーくのそうをかさねる 画像から特徴量を取り出す|がぞうからとくちょうりょうをとりだす 生成AIが文章をつくる|せいせいAIがぶんしょうをつくる データベースから情報を検索する|でーたべーすからじょうほうをけんさくする 欠損値を平均値で補う|けっそんちをへいきんちでおぎなう 正解率でモデルを評価する|せいかいりつでもでるをひょうかする データを集計してグラフにする|でーたをしゅうけいしてぐらふにする`},
   {name:'コンピュータの仕組み',w:`CPU|CPU メモリ|めもり 主記憶装置|しゅきおくそうち 補助記憶装置|ほじょきおくそうち キャッシュ|きゃっしゅ レジスタ|れじすた 入力装置|にゅうりょくそうち 出力装置|しゅつりょくそうち 論理回路|ろんりかいろ 半加算器|はんかさんき 二進数|にしんすう 十六進数|じゅうろくしんすう ビット|びっと バイト|ばいと クロック周波数|くろっくしゅうはすう オペレーティングシステム|おぺれーてぃんぐしすてむ 割り込み処理|わりこみしょり 仮想記憶|かそうきおく マルチコア|まるちこあ 論理積と論理和|ろんりせきとろんりわ 否定論理積|ひていろんりせき 1バイトは8ビット|1ばいとは8びっと フォンノイマン型|ふぉんのいまんがた 半導体|はんどうたい 集積回路|しゅうせきかいろ ムーアの法則|むーあのほうそく GPU|GPU ストレージ|すとれーじ SSD|SSD ハードディスク|はーどでぃすく マザーボード|まざーぼーど 電源ユニット|でんげんゆにっと 命令セット|めいれいせっと 機械語|きかいご アセンブリ言語|あせんぶりげんご 二進法|にしんほう 補数|ほすう 浮動小数点数|ふどうしょうすうてんすう 文字コード|もじこーど 排他的論理和|はいたてきろんりわ 全加算器|ぜんかさんき フリップフロップ|ふりっぷふろっぷ プロセス|ぷろせす スレッド|すれっど ファイルシステム|ふぁいるしすてむ デバイスドライバ|でばいすどらいば CPUが命令を順番に実行する|CPUがめいれいをじゅんばんにじっこうする メモリにデータを一時的に保存する|めもりにでーたをいちじてきにほぞんする 二進数を十進数に変換する|にしんすうをじゅっしんすうにへんかんする 十六進数で色を表す|じゅうろくしんすうでいろをあらわす 論理回路で足し算をする|ろんりかいろでたしざんをする キャッシュで処理を高速化する|きゃっしゅでしょりをこうそくかする OSがハードウェアを管理する|OSがはーどうぇあをかんりする 複数のプログラムを同時に動かす|ふくすうのぷろぐらむをどうじにうごかす 補助記憶装置にファイルを保存|ほじょきおくそうちにふぁいるをほぞん 文字を文字コードで表す|もじをもじこーどであらわす 半導体の集積度が上がる|はんどうたいのしゅうせきどがあがる クロック周波数が高いほど速い|くろっくしゅうはすうがたかいほどはやい`}
- ]}
- ,{id:'life',name:'日常',glyph:'日',en:'DAILY LIFE',cats:[
-  {name:'あいさつ・会話',w:`おはよう|おはよう こんにちは|こんにちは こんばんは|こんばんは ありがとう|ありがとう ごめんなさい|ごめんなさい いただきます|いただきます ごちそうさま|ごちそうさま いってきます|いってきます いってらっしゃい|いってらっしゃい ただいま|ただいま おかえりなさい|おかえりなさい おやすみなさい|おやすみなさい お疲れさま|おつかれさま よろしくね|よろしくね はじめまして|はじめまして 失礼します|しつれいします お元気ですか|おげんきですか また明日ね|またあしたね 久しぶりだね|ひさしぶりだね 気をつけてね|きをつけてね 大丈夫だよ|だいじょうぶだよ どういたしまして|どういたしまして お先に失礼します|おさきにしつれいします よろしくお願いします|よろしくおねがいします 今日はいい天気ですね|きょうはいいてんきですね 最近どうしてる|さいきんどうしてる また今度遊ぼうね|またこんどあそぼうね 今日はありがとうございました|きょうはありがとうございました 遅れてごめんなさい|おくれてごめんなさい ちょっと待ってください|ちょっとまってください もう一度言ってください|もういちどいってください お誕生日おめでとう|おたんじょうびおめでとう 合格おめでとうございます|ごうかくおめでとうございます 体に気をつけてください|からだにきをつけてください 今度一緒にご飯に行こう|こんどいっしょにごはんにいこう 困ったときはお互いさま|こまったときはおたがいさま 何かあったら連絡してね|なにかあったられんらくしてね 今日も一日がんばろう|きょうもいちにちがんばろう 来週の予定はどうですか|らいしゅうのよていはどうですか`},
-  {name:'食べ物・料理',w:`ごはん|ごはん みそ汁|みそしる 卵焼き|たまごやき 焼き魚|やきざかな 納豆|なっとう おにぎり|おにぎり カレーライス|かれーらいす ラーメン|らーめん お寿司|おすし 天ぷら|てんぷら 唐揚げ|からあげ ハンバーグ|はんばーぐ オムライス|おむらいす お好み焼き|おこのみやき たこ焼き|たこやき 肉じゃが|にくじゃが 冷蔵庫|れいぞうこ 電子レンジ|でんしれんじ フライパン|ふらいぱん まな板|まないた 包丁で野菜を切る|ほうちょうでやさいをきる 野菜を炒める|やさいをいためる お湯を沸かす|おゆをわかす お米を炊く|おこめをたく 朝ごはんを食べる|あさごはんをたべる お弁当を作る|おべんとうをつくる 味見をする|あじみをする 塩とこしょうで味をととのえる|しおとこしょうであじをととのえる 卵を割ってよく混ぜる|たまごをわってよくまぜる 弱火でじっくり煮込む|よわびでじっくりにこむ 冷蔵庫から牛乳を出す|れいぞうこからぎゅうにゅうをだす 食べ終わったら食器を洗う|たべおわったらしょっきをあらう 今日の晩ごはんはカレーです|きょうのばんごはんはかれーです 野菜をたくさん食べよう|やさいをたくさんたべよう 甘いものが食べたい|あまいものがたべたい 賞味期限を確認する|しょうみきげんをかくにんする 好き嫌いせずに食べる|すききらいせずにたべる 家族で鍋を囲む|かぞくでなべをかこむ`},
-  {name:'家・生活',w:`洗濯|せんたく 掃除|そうじ 料理|りょうり 買い物|かいもの 洗濯機|せんたくき 掃除機|そうじき エアコン|えあこん 布団|ふとん 歯ブラシ|はぶらし シャンプー|しゃんぷー 玄関|げんかん 台所|だいどころ お風呂|おふろ ベランダ|べらんだ 目覚まし時計|めざましどけい 早起きする|はやおきする 顔を洗う|かおをあらう 歯をみがく|はをみがく 洗濯物を干す|せんたくものをほす 部屋を片付ける|へやをかたづける ゴミを出す|ごみをだす お風呂に入る|おふろにはいる 布団をたたむ|ふとんをたたむ 窓を開けて換気する|まどをあけてかんきする 燃えるゴミは月曜日です|もえるごみはげつようびです 電気を消してから寝る|でんきをけしてからねる 毎朝七時に起きる|まいあさしちじにおきる 部屋の掃除機をかける|へやのそうじきをかける 乾いた洗濯物をたたむ|かわいたせんたくものをたたむ 鍵をかけたか確認する|かぎをかけたかかくにんする エアコンの温度を下げる|えあこんのおんどをさげる 天気がいいので布団を干す|てんきがいいのでふとんをほす 夜ふかしせずに早く寝る|よふかしせずにはやくねる 家族と分担して家事をする|かぞくとぶんたんしてかじをする`},
-  {name:'買い物・まち',w:`コンビニ|こんびに スーパー|すーぱー 駅前|えきまえ 銀行|ぎんこう 郵便局|ゆうびんきょく 病院|びょういん 薬局|やっきょく 図書館|としょかん 公園|こうえん 交差点|こうさてん 信号|しんごう 横断歩道|おうだんほどう 財布|さいふ お釣り|おつり レシート|れしーと ポイントカード|ぽいんとかーど 電子マネー|でんしまねー 定期券|ていきけん 切符を買う|きっぷをかう 電車に乗る|でんしゃにのる バスを降りる|ばすをおりる 道を聞く|みちをきく 会計をする|かいけいをする レジに並ぶ|れじにならぶ 袋はいりません|ふくろはいりません これはいくらですか|これはいくらですか カードで払えますか|かーどではらえますか 駅までの道を教えてください|えきまでのみちをおしえてください 次の駅で乗り換える|つぎのえきでのりかえる 信号が青になったら渡る|しんごうがあおになったらわたる 特売の野菜を買う|とくばいのやさいをかう 図書館で本を借りる|としょかんでほんをかりる 郵便局で荷物を送る|ゆうびんきょくでにもつをおくる 病院の予約をする|びょういんのよやくをする 試着してもいいですか|しちゃくしてもいいですか`},
-  {name:'学校・仕事',w:`教室|きょうしつ 黒板|こくばん 宿題|しゅくだい 時間割|じかんわり 給食|きゅうしょく 部活動|ぶかつどう 文化祭|ぶんかさい 体育祭|たいいくさい 定期テスト|ていきてすと 夏休み|なつやすみ 先生|せんせい 友達|ともだち 会社|かいしゃ 会議|かいぎ 名刺|めいし 残業|ざんぎょう 出張|しゅっちょう 締め切り|しめきり 資料を作る|しりょうをつくる 宿題を提出する|しゅくだいをていしゅつする 授業に遅れる|じゅぎょうにおくれる ノートをとる|のーとをとる テスト勉強をする|てすとべんきょうをする 図書室で調べる|としょしつでしらべる 部活動の練習に行く|ぶかつどうのれんしゅうにいく 明日までに宿題を終わらせる|あしたまでにしゅくだいをおわらせる 先生に質問をする|せんせいにしつもんをする 会議の資料を準備する|かいぎのしりょうをじゅんびする 取引先にメールを送る|とりひきさきにめーるをおくる 今日の予定を確認する|きょうのよていをかくにんする 締め切りに間に合わせる|しめきりにまにあわせる 報告と連絡と相談|ほうこくとれんらくとそうだん チームで協力して進める|ちーむできょうりょくしてすすめる 来月から新しい仕事を始める|らいげつからあたらしいしごとをはじめる`},
-  {name:'趣味・季節',w:`読書|どくしょ 映画|えいが 音楽|おんがく 旅行|りょこう 写真|しゃしん 散歩|さんぽ ゲーム|げーむ サッカー|さっかー 野球|やきゅう 水泳|すいえい ギター|ぎたー 料理教室|りょうりきょうしつ 桜|さくら 花火|はなび 紅葉|こうよう 雪だるま|ゆきだるま お花見|おはなみ 夏祭り|なつまつり お正月|おしょうがつ 天気予報|てんきよほう 梅雨入り|つゆいり 傘を持っていく|かさをもっていく 映画を見に行く|えいがをみにいく 音楽を聞く|おんがくをきく 写真を撮る|しゃしんをとる 友達と旅行に行く|ともだちとりょこうにいく 週末は家でゆっくりする|しゅうまつはいえでゆっくりする 春になると桜が咲く|はるになるとさくらがさく 夏休みに海で泳ぐ|なつやすみにうみでおよぐ 秋は紅葉がきれいです|あきはこうようがきれいです 冬は雪が降って寒い|ふゆはゆきがふってさむい 明日は雨が降るらしい|あしたはあめがふるらしい 休みの日に公園を散歩する|やすみのひにこうえんをさんぽする 毎日少しずつ本を読む|まいにちすこしずつほんをよむ 好きな歌手のライブに行く|すきなかしゅのらいぶにいく`}
  ]}
  ,{id:'eng',name:'英語',glyph:'英',en:'ENGLISH',cats:[
   {name:'TOEIC',e:`invoice|請求書
@@ -967,6 +987,7 @@ function renderSetup(){
  $('startBtn').disabled=!pool.length;
  const best=store.get(bestKey(),null);
  $('bestInfo').innerHTML=best?`この条件の自己ベスト <b>${best}</b> 点`:'この条件の自己ベストはまだありません';
+ bindGoal($('goalIn'),curPlayCfg());
  $('soundBtn').textContent='効果音: '+(S.sound?'ON':'OFF');
  save();
 }
@@ -1010,7 +1031,7 @@ function startGame(opts){
  if(!pool.length){if(prac)alert('この練習問題には、かなで入力できる問題がありません。');return;}
  if(document.activeElement) document.activeElement.blur();
  if(G) stopTimers();
- G={kana,test,kpend:'',pool:byLength(pool),pi:0,used:new Set(),prac,quota:prac?pool.length:0,title:prac?opts.title:'',missKana:{},missWords:[],score:0,correct:0,miss:0,combo:0,maxCombo:0,tier:0,comboBonus:0,cleared:0,failed:0,
+ G={kana,test,kpend:'',chars:0,pool:byLength(pool),pi:0,used:new Set(),prac,quota:prac?pool.length:0,title:prac?opts.title:'',missKana:{},missWords:[],score:0,correct:0,miss:0,combo:0,maxCombo:0,tier:0,comboBonus:0,cleared:0,failed:0,
     hist:[],missKeys:{},dur:prac?0:test?test.sec*1000:S.minutes*60000,t0:0,running:false,done:false,timers:[],raf:0,
     limitP:prac||test?null:limitParams(),mode:prac||test?'normal':S.mode,level:S.level,stageName:prac?'練習':stageOf(S.stage).name,
     catNames:prac?[opts.title]:stageOf(S.stage).cats.filter(c=>S.cats.includes(c.id)).map(c=>c.name),cfg:{...S,show:{...S.show}}};
@@ -1140,7 +1161,7 @@ function onType(k){
   }else sfx.key();
   if(G.i>=G.w.y.length){
    const b=[10,13,16,19][G.level-1]+(G.wordMiss?0:4);           // 1問クリア 10〜23点
-   G.score+=b;G.cleared++;G.hist.push({d:G.w.d,ok:true});lrWordEnd(true);
+   G.score+=b;G.cleared++;G.chars+=[...G.w.y].length;G.hist.push({d:G.w.d,ok:true});lrWordEnd(true);
    pop(`+${b}`);sfx.clear();showWord();
   }else renderWord();
  }else{
@@ -1156,7 +1177,7 @@ function onType(k){
  updateHud();
 }
 function failWord(reason){
- G.failed++;G.hist.push({d:G.w.d,ok:false});lrWordEnd(false);
+ G.failed++;G.chars+=G.i;G.hist.push({d:G.w.d,ok:false});lrWordEnd(false);
  const fx=$('fx');fx.textContent='× '+reason;fx.classList.remove('show');void fx.offsetWidth;fx.classList.add('show');
  sfx.fail();showWord();updateHud();
 }
@@ -1192,6 +1213,7 @@ function finish(gameover){
  if(G.done) return;
  const raw=performance.now()-G.t0, elapsed=(G.dur?Math.min(G.dur,raw):raw)/1000;
  stopTimers();G.done=true;G.gameover=gameover;G.elapsed=Math.max(elapsed,.001);
+ if(G.w) G.chars+=G.i;   // 途中まで打った問題の文字数
  const tot=G.correct+G.miss;
  if(tot>0&&!G.test) recordDay({kps:G.correct/G.elapsed,acc:G.correct/tot,keys:G.correct});
  if(tot>0){LD.sessions.push({t:Date.now(),kps:+(G.correct/G.elapsed).toFixed(2),acc:+(G.correct/tot).toFixed(3),sc:G.score,p:G.prac});LD.sessions=LD.sessions.slice(-60);saveLearn();}
@@ -1211,17 +1233,13 @@ const TEST=[
 let T=null, lastTest=false;
 const testPoints=r=>{const tot=r.correct+r.miss;if(!tot)return 0;const acc=r.correct/tot;return r.correct*60/r.elapsed*acc*acc;};
 const testScore=(pts,line)=>Math.min(100,Math.floor(pts/line*1000)/10);
+// 検定テストは設定（科目・カテゴリ・レベル）に関係なく、全科目の問題から長さで選ぶ
 function testPool(sec){
- const st=stageOf(S.stage);
- const fit=ws=>ws.filter(w=>w.n>=sec.min&&w.n<=sec.max);
- let p=fit(st.cats.filter(c=>S.cats.includes(c.id)).flatMap(c=>c.words));
- if(p.length<12) p=fit(st.cats.flatMap(c=>c.words));
- if(p.length<12) p=fit(ALLW);
- return p;
+ return ALLW.filter(w=>w.n>=sec.min&&w.n<=sec.max);
 }
 function startTest(){
  lastTest=true;
- T={idx:0,res:[],stage:S.stage,stageName:stageOf(S.stage).name};
+ T={idx:0,res:[],stage:'all',stageName:'全科目'};
  showTestIntro();
 }
 function showTestIntro(){
@@ -1230,8 +1248,10 @@ function showTestIntro(){
  $('tBody').innerHTML=`<div class="tsec">${TEST.map((t,i)=>{
    const r=T.res[i];
    return `<div class="${i===T.idx?'cur':r?'done':''}"><b>${t.name}テスト</b><small>${t.sec}秒 · 特級ライン ${t.line}pt</small>${r?`<span class="sc">${r.score}点</span><small>${Math.round(r.points)}pt · 正確率 ${(r.acc*100).toFixed(1)}%</small>`:i===T.idx?'<small>次はこのテストです</small>':''}</div>`;}).join('')}</div>
-  <p class="tnote">${sec.name}を${sec.sec}秒間、できるだけ速く正確に打ってください。ミスしても打ち直せますが、正確率は2乗で効くので<b>ミスは大きく減点</b>されます。<br>ポイント = 正しく打った数 × 60 ÷ 秒 × 正確率²。特級ライン（${sec.line}pt）に届けば、この科目は100点です。3科目の平均が得点になります。${S.input==='kana'?'<br>検定の基準がローマ字の打鍵数なので、テストはローマ字入力で行います。':''}</p>`;
+  <div class="goal"><label for="tGoal">検定テストの目標点数（100点満点）</label><input id="tGoal" type="number" min="0" max="100" step="5" inputmode="numeric" placeholder="未設定"><span>点</span></div>
+  <p class="tnote">${sec.name}を${sec.sec}秒間、できるだけ速く正確に打ってください。ミスしても打ち直せますが、正確率は2乗で効くので<b>ミスは大きく減点</b>されます。<br>ポイント = 正しく打った数 × 60 ÷ 秒 × 正確率²。特級ライン（${sec.line}pt）に届けば、この科目は100点です。3科目の平均が得点になります。<br>問題は設定画面の科目・カテゴリ・レベルに関係なく、全科目から出題されます。${S.input==='kana'?'<br>検定の基準がローマ字の打鍵数なので、テストはローマ字入力で行います。':''}</p>`;
  $('tNext').textContent=`${sec.name}テストを開始`;
+ bindGoal($('tGoal'),{test:true,stage:'all'});
  showScreen('test');
 }
 function nextTestSection(){
@@ -1242,7 +1262,7 @@ function nextTestSection(){
 function testSectionDone(){
  const g=G, tot=g.correct+g.miss;
  const r={name:g.test.name,line:g.test.line,correct:g.correct,miss:g.miss,elapsed:g.elapsed,acc:tot?g.correct/tot:0,
-   kps:g.correct/g.elapsed,hist:g.hist,missKeys:g.missKeys,missKana:g.missKana,missWords:g.missWords};
+   kps:g.correct/g.elapsed,chars:g.chars,hist:g.hist,missKeys:g.missKeys,missKana:g.missKana,missWords:g.missWords};
  r.points=testPoints(r); r.score=testScore(r.points,r.line);
  T.res.push(r); T.idx++;
  if(T.idx<TEST.length) showTestIntro(); else showTestResult();
@@ -1250,7 +1270,7 @@ function testSectionDone(){
 function showTestResult(){
  const R=T.res, total=Math.round(R.reduce((a,r)=>a+r.score,0)/R.length*10)/10;
  const correct=R.reduce((a,r)=>a+r.correct,0), miss=R.reduce((a,r)=>a+r.miss,0), secs=R.reduce((a,r)=>a+r.elapsed,0);
- const key='yougoda-test-best:'+T.stage, prev=store.get(key,null), isBest=total>0&&(prev==null||total>prev);
+ const key='yougoda-test-best', prev=store.get(key,null), isBest=total>0&&(prev==null||total>prev);
  if(isBest) store.set(key,total);
  const pass=R.every(r=>r.score>=100);
  $('rHead').innerHTML=`<span class="ttl">検定テスト 結果</span><span>科目 <b>${esc(T.stageName)}</b></span><span>単語・短文・長文 <b>各60秒</b></span><span>100点 = 特級合格ライン</span>`;
@@ -1283,6 +1303,7 @@ function showTestResult(){
  }
  $('rCoach').innerHTML='<div class="who">判定</div>'+out.map(t=>`<p>${esc(t)}</p>`).join('');
  if(correct+miss>0) recordDay({test:total,keys:correct});
+ comparePanel({test:true,stage:T.stage},{score:total,cpm:R.reduce((a,r)=>a+r.chars,0)/(secs/60)});
  rankAfter({test:true,stage:T.stage},{score:total,kps:secs?correct/secs:0,acc:correct+miss?correct/(correct+miss):0});
  T=null;
  showScreen('result');
@@ -1384,9 +1405,9 @@ function renderDays(node){
 const RANKING_CONFIG={projectId:'',apiKey:''};
 const MAX_KPS=20;   // これを超える速度は機械的な入力とみなしてオンライン登録しない（Firestore のルールでも同じ上限）
 const online=()=>!!(RANKING_CONFIG.projectId&&RANKING_CONFIG.apiKey);
-const boardOf=c=>c.test?`test-${c.stage}`:`play-${c.stage}-l${c.level}-m${c.minutes}-${c.limit}-${c.mode}-${c.input||'roma'}`;
+const boardOf=c=>c.test?'test-all':`play-${c.stage}-l${c.level}-m${c.minutes}-${c.limit}-${c.mode}-${c.input||'roma'}`;
 function boardLabel(c){
- if(c.test) return `検定テスト · ${stageOf(c.stage).name}`;
+ if(c.test) return '検定テスト（全科目）';
  const L=LIMITS.find(l=>l.v===c.limit);
  return `${stageOf(c.stage).name} · Lv.${c.level} · ${c.minutes}分 · 制限${L?L.label:''} · ${MODES.find(m=>m.v===c.mode).name} · ${c.input==='kana'?'かな':'ローマ字'}`;
 }
@@ -1425,6 +1446,55 @@ async function fillOnline(node,b,test,meT){
  try{const a=await onlineTop(b,20);node.innerHTML=rankList(a,test,meT);}
  catch(err){node.innerHTML=`<p class="rkmsg">読み込めませんでした（${esc(err.message)}）。</p>`;}
 }
+// --- 目標点数と平均（くらべる）
+const curPlayCfg=()=>({stage:S.stage,level:S.level,minutes:S.minutes,limit:S.limit,mode:S.mode,input:S.input});
+const getGoal=b=>{const v=(S.goals||{})[b];return typeof v==='number'&&v>0?v:null;};
+function setGoal(b,v){S.goals=Object.assign({},S.goals);if(v>0)S.goals[b]=v;else delete S.goals[b];save();}
+function bindGoal(input,cfg,after){
+ const b=boardOf(cfg), g=getGoal(b);
+ input.value=g==null?'':String(g);
+ input.oninput=()=>{const v=Math.max(0,Math.round(+input.value||0));setGoal(b,cfg.test?Math.min(100,v):v);if(after)after();};
+}
+const SKEY='yougoda-stats:';     // 条件ごとの {n:回数, sum:合計点}（自分の平均用）
+function addStat(b,score){const st=store.get(SKEY+b,{n:0,sum:0});st.n++;st.sum+=score;store.set(SKEY+b,st);return st;}
+async function onlineAvg(b){
+ const r=await fetch(`${fsBase()}/boards/${encodeURIComponent(b)}:runAggregationQuery?key=${encodeURIComponent(RANKING_CONFIG.apiKey)}`,{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({structuredAggregationQuery:{structuredQuery:{from:[{collectionId:'scores'}]},aggregations:[{alias:'avg',avg:{field:{fieldPath:'score'}}},{alias:'n',count:{}}]}})});
+ if(!r.ok) throw new Error('HTTP '+r.status);
+ const j=await r.json(), f=(j[0]&&j[0].result&&j[0].result.aggregateFields)||{};
+ return {avg:f.avg&&f.avg.nullValue===undefined?fsNum(f.avg):null,n:fsNum(f.n)};
+}
+// 参考: 文部科学省「情報活用能力調査（高等学校）」2017年度 — 高校生の1分あたりの文字入力数の平均
+const REF_CPM=24.7;
+function comparePanel(cfg,res){
+ const test=!!cfg.test, b=boardOf(cfg), score=test?res.score:Math.round(res.score);
+ const st=res.score>0?addStat(b,score):store.get(SKEY+b,{n:0,sum:0});
+ const fmtv=v=>v==null?'—':test?(+v).toFixed(1):String(Math.round(v));
+ let oa=null;   // みんなの平均 {avg,n} / {err:true}
+ const box=$('rCmp');box.hidden=false;
+ box.innerHTML=`<h4>くらべる <small class="hint">${esc(boardLabel(cfg))}</small></h4>
+  <p class="cmpmsg" id="cmpMsg"></p>
+  <dl class="cmp" id="cmpRows"></dl>
+  <div class="goal"><label for="rGoal">目標点数を変える</label><input id="rGoal" type="number" min="0" ${test?'max="100" step="5"':'step="10"'} inputmode="numeric" placeholder="未設定"><span>点</span></div>
+  <p class="cmpref">入力の速さ: 1分あたり <b>${(res.cpm||0).toFixed(1)}</b> 字（読みのかな・英字で数えています）。参考: 高校生の全国平均は <b>${REF_CPM}</b> 字/分（文部科学省 2017年度 情報活用能力調査。漢字かな交じり文を変換しながら入力した文字数なので、この数え方より少なめに出ます）。${online()?'':'みんなの平均は、オンラインランキングを設定すると表示されます。'}</p>`;
+ const draw=()=>{
+  const goal=getGoal(b), mine=st.n?st.sum/st.n:null;
+  const oNote=!online()?'未設定':!oa?'読み込み中':oa.err?'読み込めません':oa.n?`${oa.n}件`:'まだ記録なし';
+  const rows=[['今回',score,'me','点'],['目標',goal,'goal',goal==null?'未設定':'点'],
+   ['あなたの平均',mine,'',mine==null?'まだ記録なし':`点 · ${st.n}回`],['みんなの平均',oa&&oa.avg,'',oa&&oa.avg!=null?`点 · ${oNote}`:oNote]];
+  const max=Math.max(1,...rows.map(r=>+r[1]||0))*1.05;
+  $('cmpRows').innerHTML=rows.map(r=>`<dt>${r[0]}</dt><div class="bar"><i class="${r[2]}" style="width:${r[1]==null?0:Math.max(1,r[1]/max*100)}%"></i></div><dd>${fmtv(r[1])}<small>${r[3]}</small></dd>`).join('');
+  const parts=[];
+  if(goal!=null){const d=score-goal;parts.push(d>=0?`目標達成！ 目標を <b>${fmtv(d)}</b> 点上回りました。`:`目標まで あと <b>${fmtv(-d)}</b> 点。`);}
+  else parts.push('目標点数を入れると、毎回の結果と比べられます。');
+  if(oa&&oa.avg!=null){const d=score-oa.avg;parts.push(d>=0?`みんなの平均より ${fmtv(d)} 点高い結果です。`:`みんなの平均まで あと ${fmtv(-d)} 点。`);}
+  $('cmpMsg').innerHTML=parts.join(' ');
+ };
+ bindGoal($('rGoal'),cfg,draw);
+ draw();
+ if(online()) onlineAvg(b).then(o=>{oa=o;draw();}).catch(()=>{oa={err:true};draw();});
+}
+
 // --- 結果画面のランキング
 let RK=null;
 function rankAfter(cfg,res){
@@ -1473,12 +1543,12 @@ function renderRank(){
   renderDays($('kLists'));
   return;
  }
- const cfg=rankKind==='test'?{test:true,stage:S.stage}:{stage:S.stage,level:S.level,minutes:S.minutes,limit:S.limit,mode:S.mode,input:S.input};
+ const cfg=rankKind==='test'?{test:true,stage:'all'}:{stage:S.stage,level:S.level,minutes:S.minutes,limit:S.limit,mode:S.mode,input:S.input};
  const b=boardOf(cfg), test=rankKind==='test';
  $('kLabel').textContent=boardLabel(cfg);
  const kEl=$('kKind');kEl.innerHTML='';
  [['play','通常プレイ'],['test','検定テスト'],['days','日ごとの記録']].forEach(([v,l])=>{const x=el('button','',l);x.setAttribute('aria-pressed',rankKind===v);x.onclick=()=>{rankKind=v;renderRank();};kEl.appendChild(x);});
- $('kHint').textContent=test?'検定テストは科目ごとのランキングです。科目は設定画面で選んでいる科目です。':'今の設定（科目・レベル・時間・制限時間・ルール・入力方法）が同じ人どうしのランキングです。条件は設定画面で変えられます。';
+ $('kHint').textContent=test?'検定テストのランキングです。テストは設定に関係なく全科目から出題されるので、全員が同じ条件で競えます。':'今の設定（科目・レベル・時間・制限時間・ルール・入力方法）が同じ人どうしのランキングです。条件は設定画面で変えられます。';
  $('kLists').innerHTML='<div><h5>この端末<small>上位10件</small></h5><div id="kLocal"></div></div><div><h5>みんな<small>オンライン上位20件</small></h5><div id="kOnline"></div></div>';
  $('kLocal').innerHTML=rankList(localBoard(b),test,null);
  fillOnline($('kOnline'),b,test,null);
@@ -1488,7 +1558,7 @@ $('kName').oninput=e=>{S.name=e.target.value;save();};
 $('rankBtn').onclick=()=>openRank();
 $('kBack').onclick=()=>{showScreen('setup');renderSetup();};
 $('kReset').onclick=()=>{
- const cfg=rankKind==='test'?{test:true,stage:S.stage}:{stage:S.stage,level:S.level,minutes:S.minutes,limit:S.limit,mode:S.mode,input:S.input};
+ const cfg=rankKind==='test'?{test:true,stage:'all'}:{stage:S.stage,level:S.level,minutes:S.minutes,limit:S.limit,mode:S.mode,input:S.input};
  if(!confirm(`「${boardLabel(cfg)}」のこの端末のランキングを消します。よろしいですか？`))return;
  try{localStorage.removeItem(LRK+boardOf(cfg));}catch(_){}
  renderRank();
@@ -1527,8 +1597,9 @@ function showResult(){
  if(!g.hist.length) h.innerHTML='<li class="hint">まだ1問も打ち終えていません。</li>';
  g.hist.forEach(x=>{const li=el('li',x.ok?'ok':'ng');li.append(span('mk',x.ok?'○':'×'),span('w',x.d));h.appendChild(li);});
  $('rCoach').innerHTML='<div class="who">AIコーチのひとこと</div>'+gameComments(g).map(t=>`<p>${esc(t)}</p>`).join('');
- if(g.prac) $('rRank').hidden=true;
- else rankAfter({stage:g.cfg.stage,level:g.cfg.level,minutes:g.cfg.minutes,limit:g.cfg.limit,mode:g.cfg.mode,input:g.kana?'kana':'roma'},{score:g.score,kps,acc});
+ if(g.prac){$('rRank').hidden=true;$('rCmp').hidden=true;}
+ else comparePanel({stage:g.cfg.stage,level:g.cfg.level,minutes:g.cfg.minutes,limit:g.cfg.limit,mode:g.cfg.mode,input:g.kana?'kana':'roma'},{score:g.score,cpm:g.chars/(g.elapsed/60)});
+ if(!g.prac) rankAfter({stage:g.cfg.stage,level:g.cfg.level,minutes:g.cfg.minutes,limit:g.cfg.limit,mode:g.cfg.mode,input:g.kana?'kana':'roma'},{score:g.score,kps,acc});
  showScreen('result');
 }
 $('startBtn').onclick=()=>{lastTest=false;startGame();};
@@ -1687,6 +1758,7 @@ document.addEventListener('keydown',e=>{
  }else if(screen==='rank'){
   if(e.key==='Escape'&&!(document.activeElement&&document.activeElement.tagName==='INPUT')){showScreen('setup');renderSetup();}
  }else if(screen==='test'){
+  if(document.activeElement&&document.activeElement.tagName==='INPUT') return;
   if(e.key==='Enter'){e.preventDefault();nextTestSection();}
   else if(e.key==='Escape'){T=null;showScreen('setup');renderSetup();}
  }else if(screen==='coach'){
