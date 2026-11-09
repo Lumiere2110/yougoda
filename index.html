@@ -268,6 +268,47 @@ body.titling .top{display:none}
 .goallist li span{flex:1;min-width:0;overflow-wrap:anywhere;color:var(--muted)}
 .goallist li b{font-family:var(--f-mono)}
 .goallist li button{background:none;border:1.5px solid var(--line);border-radius:6px;padding:2px 10px;font-size:12px}
+/* キー配置画面 */
+:root{--f-p:#ead9f5;--f-r:#d6e6fb;--f-m:#d3efdf;--f-i:#fbe5c3;--f-t:#e9ebe3}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--f-p:#47395b;--f-r:#2e425f;--f-m:#2b4a3b;--f-i:#5b4630;--f-t:#34443e}}
+:root[data-theme="dark"]{--f-p:#47395b;--f-r:#2e425f;--f-m:#2b4a3b;--f-i:#5b4630;--f-t:#34443e}
+.kystick{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);padding-block:6px 8px;border-bottom:1.5px solid var(--line)}
+.kb-wrap{padding:8px 0 2px}
+.kb{display:flex;flex-direction:column;gap:5px;max-width:760px;margin:0 auto}
+.kb-row{display:flex;gap:5px}
+.kb-key{flex:1 1 0;min-width:0;height:46px;border:1.5px solid var(--line);border-bottom-width:3px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-mono);font-size:16px;position:relative;color:var(--ink);background:var(--f-t)}
+.kb-key.f-p{background:var(--f-p)}.kb-key.f-r{background:var(--f-r)}.kb-key.f-m{background:var(--f-m)}.kb-key.f-i{background:var(--f-i)}
+.kb-key.home::after{content:"";position:absolute;bottom:7px;left:50%;width:12px;height:2px;margin-left:-6px;border-radius:1px;background:var(--ink);opacity:.6}
+.kb-key.space{flex:6 1 0;font-family:var(--f-body);font-size:12px;color:var(--muted)}
+.kb-key.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);z-index:1}
+.kb-key .ord{position:absolute;top:-9px;right:-7px;min-width:20px;height:20px;padding:0 4px;border-radius:10px;background:var(--accent);color:var(--on-accent);
+  font-size:11px;font-weight:700;display:grid;place-items:center;font-family:var(--f-mono)}
+.kb-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);justify-content:center}
+.kb-legend span{display:inline-flex;align-items:center;gap:6px}
+.kb-legend i{width:14px;height:14px;border-radius:3px;border:1px solid var(--line);background:var(--c)}
+.kb-info{min-height:2.6em;text-align:center;font-size:15px}
+.kb-info b{font-family:var(--f-mono);font-size:20px;color:var(--accent);letter-spacing:.06em}
+.kb-info small{display:block;color:var(--muted);font-size:12.5px}
+.kt{display:flex;flex-direction:column;gap:12px}
+.kt h4{margin:0;font-size:13px;color:var(--muted);letter-spacing:.08em}
+.kt-grid{display:flex;flex-wrap:wrap;gap:10px 16px}
+.kt-row{display:grid;grid-template-columns:repeat(var(--n),56px);gap:5px}
+@media (max-width:560px){.kt-row{grid-template-columns:repeat(var(--n),minmax(0,1fr));width:100%}
+ .kb-key{height:34px;font-size:12.5px;border-radius:5px}.kb{gap:3px}.kb-row{gap:3px}.kb-key .ord{min-width:16px;height:16px;font-size:10px;top:-7px;right:-5px}
+ .kb-info b{font-size:17px}.kfl .fkey{height:46px;font-size:18px}}
+.kt-cell{display:flex;flex-direction:column;align-items:center;gap:0;padding:6px 2px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);line-height:1.25}
+.kt-cell b{font-size:18px}
+.kt-cell small{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.kt-cell:hover{border-color:var(--ink)}
+.kt-cell[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.kt-cell.blank{visibility:hidden}
+.kfl{max-width:360px;margin:0 auto;width:100%}
+.kfl .fgrid{max-width:360px}
+.kfl .fkey{height:58px;position:relative;font-size:22px;border:1.5px solid var(--line);border-bottom-width:3px;border-radius:8px;background:var(--paper);width:100%}
+.kfl .fkey.next{background:var(--accent-soft);border-color:var(--accent)}
+.kfl .fkey.next i.on{color:var(--on-accent);background:var(--accent);border-radius:3px;padding:2px 3px;font-size:12px;font-weight:700}
+
 /* 終了画面 */
 .bye{min-height:calc(100vh - 80px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
 .bye h2{font-family:var(--f-hand);font-size:clamp(30px,6vw,46px);color:var(--red);margin:0;font-weight:600}
@@ -417,7 +458,7 @@ body.osk-on{padding-bottom:260px}
         <button id="tiExit" class="t-btn" type="button"><span class="k">4</span><b>終了</b><small>ウェブサイトを閉じる</small></button>
       </nav>
       <div class="t-stats" id="tiStats"></div>
-      <div class="t-links"><button id="tiRank" class="ghost" type="button">ランキング</button><button id="tiCoach" class="ghost" type="button">AIコーチ</button></div>
+      <div class="t-links"><button id="tiRank" class="ghost" type="button">ランキング</button><button id="tiCoach" class="ghost" type="button">AIコーチ</button><button id="tiKeys" class="ghost" type="button">キー配置</button></div>
     </div>
   </section>
 
@@ -453,6 +494,21 @@ body.osk-on{padding-bottom:260px}
         </section>
       </div>
       <div class="actions"><button id="stBack" class="start" type="button">タイトルへ戻る</button><button id="stPlay" class="ghost" type="button">プレイへ</button><p class="hint">Esc でタイトルへ</p></div>
+    </div>
+  </section>
+
+  <section id="scr-keys" hidden>
+    <div class="sheet">
+      <div class="sheet-head"><span class="ttl">キー配置</span><span>文字を選ぶと、打つキーが順番の番号つきで光ります</span></div>
+      <div class="seg" id="kyMode"></div>
+      <div class="kystick">
+        <div class="kb-info" id="kyInfo"></div>
+        <div id="kyBoard"></div>
+      </div>
+      <div id="kyLegend"></div>
+      <div class="goal"><label for="kyWord">言葉を入れて調べる（ひらがな）</label><input id="kyWord" type="text" style="width:14em;font-family:var(--f-body)" placeholder="例: いんすうぶんかい" autocomplete="off"></div>
+      <div class="kt" id="kyTable"></div>
+      <div class="actions"><button id="kyBack" class="start" type="button">タイトルへ戻る</button><p class="hint">Esc でタイトルへ</p></div>
     </div>
   </section>
 
@@ -1111,7 +1167,7 @@ const sfx={key:()=>tone(1400,.03,'triangle',.025),miss:()=>tone(130,.14,'sawtoot
 
 /* ===================== ゲーム本体 ===================== */
 let G=null, screen='title';
-function showScreen(s){screen=s;['title','settings','bye','setup','play','result','coach','test','rank'].forEach(n=>$('scr-'+n).hidden=n!==s);
+function showScreen(s){screen=s;['title','settings','bye','keys','setup','play','result','coach','test','rank'].forEach(n=>$('scr-'+n).hidden=n!==s);
  document.body.classList.toggle('playing',s==='play');document.body.classList.toggle('titling',s==='title'||s==='bye');applyOSK();window.scrollTo(0,0);}
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -1867,6 +1923,8 @@ document.addEventListener('keydown',e=>{
   const n={'1':'tiPlay','2':'tiTest','3':'tiSet','4':'tiExit'}[e.key];
   if(n){e.preventDefault();$(n).click();}
   else if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const bs=[...document.querySelectorAll('.t-menu button')],i=bs.indexOf(document.activeElement);bs[(i+(e.key==='ArrowDown'?1:bs.length-1+(i<0?1:0)))%bs.length].focus();}
+ }else if(screen==='keys'){
+  if(e.key==='Escape'&&!(document.activeElement&&document.activeElement.tagName==='INPUT')){openTitle();}
  }else if(screen==='settings'){
   if(e.key==='Escape'&&!(document.activeElement&&document.activeElement.tagName==='INPUT')){openTitle();}
  }else if(screen==='bye'){
@@ -2194,6 +2252,101 @@ $('tiTest').onclick=()=>startTest();
 $('tiSet').onclick=()=>openSettings();
 $('tiRank').onclick=()=>openRank();
 $('tiCoach').onclick=()=>openCoach();
+$('tiKeys').onclick=()=>openKeys();
+
+/* ===================== キー配置画面 ===================== */
+// 日本語（JIS）キーボードの配置。指ごとに色分けし、選んだ文字を打つキーを順番つきで光らせる。
+const KB_ROWS=['1234567890-^','qwertyuiop@[','asdfghjkl;:]','zxcvbnm,./'];
+const FCLS={'小指':'f-p','薬指':'f-r','中指':'f-m','人差し指':'f-i','親指':'f-t'};
+const fingerClass=k=>{const f=FINGER[k]||'';for(const n in FCLS)if(f.endsWith(n))return FCLS[n];return '';};
+const KT_ROWS=[
+ ['清音',['あいうえお','かきくけこ','さしすせそ','たちつてと','なにぬねの','はひふへほ','まみむめも','や_ゆ_よ','らりるれろ','わ_を_ん']],
+ ['濁音・半濁音',['がぎぐげご','ざじずぜぞ','だぢづでど','ばびぶべぼ','ぱぴぷぺぽ']],
+ ['拗音（ゃ・ゅ・ょ）',['きゃ きゅ きょ','しゃ しゅ しょ','ちゃ ちゅ ちょ','にゃ にゅ にょ','ひゃ ひゅ ひょ','みゃ みゅ みょ','りゃ りゅ りょ','ぎゃ ぎゅ ぎょ','じゃ じゅ じょ','びゃ びゅ びょ','ぴゃ ぴゅ ぴょ']],
+ ['小さい文字・記号など',['っ ー ふぁ ふぃ ふぇ ふぉ てぃ でぃ','ぁ ぃ ぅ ぇ ぉ ゃ ゅ ょ']]
+];
+let kyMode='roma', kySel=null;
+function openKeys(){kyMode=S.input==='kana'?'kana':'roma';kySel=null;showScreen('keys');renderKeys();}
+function kyCells(row){return row.includes(' ')?row.split(' '):[...row];}
+function romaOf(u){
+ if(u==='っ') return {main:'(次の子音を2回)',alts:['xtu','ltu'],keys:['x','t','u'],note:'次の文字の子音を2回打ちます（例: っか → kka）。単独なら xtu / ltu。'};
+ if(u==='ん') return {main:'nn',alts:['n'],keys:['n','n'],note:'次が母音・や行・な行のときは nn。それ以外は n 1回でもOK。'};
+ const o=YOON[u]||BASE[u]; if(!o) return null;
+ return {main:o[0],alts:o.slice(1),keys:[...o[0]],note:''};
+}
+function renderKeys(){
+ const mEl=$('kyMode');mEl.innerHTML='';
+ [['roma','ローマ字（キーボード）'],['kana','かな（フリック入力）']].forEach(([v,l])=>{const b=el('button','',l);b.setAttribute('aria-pressed',kyMode===v);b.onclick=()=>{kyMode=v;renderKeys();};mEl.appendChild(b);});
+ // 盤面
+ const bd=$('kyBoard');
+ if(kyMode==='roma'){
+  bd.innerHTML='<div class="kb-wrap"><div class="kb">'+KB_ROWS.map((r,i)=>`<div class="kb-row" style="padding-left:${i*2}%">${[...r].map(k=>`<div class="kb-key ${fingerClass(k)}${k==='f'||k==='j'?' home':''}" data-k="${esc(k)}" title="${esc(FINGER[k]||'')}">${esc(k)}</div>`).join('')}</div>`).join('')+
+   '<div class="kb-row" style="padding-left:22%;padding-right:22%"><div class="kb-key space f-t" data-k=" " title="親指">スペース</div></div></div></div>';
+  $('kyLegend').innerHTML='<div class="kb-legend">'+[['f-p','小指'],['f-r','薬指'],['f-m','中指'],['f-i','人差し指'],['f-t','親指']].map(([c,l])=>`<span><i style="--c:var(--${c})"></i>${l}</span>`).join('')+'<span>（左右とも同じ色。F と J の下線はホームポジション）</span></div>'+
+   '<p class="hint" style="text-align:center">日本語（JIS）キーボードの配置です。英語（US）キーボードでは記号の位置が違います。</p>';
+ }else{
+ bd.innerHTML='<div class="kfl"><div class="fgrid">'+FLICK.map((k,i)=>`<div class="fkey" data-i="${i}">`+(k[0]===FMOD?'<b>゛゜小</b>':`<b>${k[0]}</b>`+[1,2,3,4].map(d=>k[d]?`<i class="${FDIR[d]}">${k[d]}</i>`:'').join(''))+'</div>').join('')+'</div></div>';
+  $('kyLegend').innerHTML='<p class="hint" style="text-align:center">タップで真ん中の文字、左・上・右・下にはじくとまわりの文字。濁点・半濁点・小さい文字は、元の文字のあとに「゛゜小」を押します。</p>';
+ }
+ // かな表
+ $('kyTable').innerHTML=KT_ROWS.map(([h,rows])=>`<div><h4>${h}</h4><div class="kt-grid">${rows.map(r=>`<div class="kt-row" style="--n:${kyCells(r).length}">`+kyCells(r).map(u=>{
+   if(u==='_') return '<span class="kt-cell blank"></span>';
+   const ro=romaOf(u);
+   return `<button type="button" class="kt-cell" data-u="${esc(u)}" aria-pressed="${kySel===u}"><b>${esc(u)}</b><small>${ro?esc(u==='っ'?'xtu':ro.main):''}</small></button>`;}).join('')+'</div>').join('')}</div></div>`).join('');
+ $('kyTable').querySelectorAll('.kt-cell[data-u]').forEach(b=>b.onclick=()=>{kySel=b.dataset.u;$('kyWord').value='';renderKeys();});
+ showSel();
+}
+function markKeys(seq){
+ const bd=$('kyBoard');
+ bd.querySelectorAll('.kb-key').forEach(k=>{k.classList.remove('on');const o=k.querySelector('.ord');if(o)o.remove();});
+ const firsts={};
+ seq.forEach((ch,i)=>{const k=bd.querySelector(`.kb-key[data-k="${CSS.escape(ch)}"]`);if(!k)return;k.classList.add('on');(firsts[ch]=firsts[ch]||[]).push(i+1);});
+ Object.entries(firsts).forEach(([ch,ns])=>{const k=bd.querySelector(`.kb-key[data-k="${CSS.escape(ch)}"]`);const o=el('span','ord');o.textContent=ns.length>3?ns.slice(0,3).join(',')+'…':ns.join(',');k.appendChild(o);});
+}
+function markFlick(u){
+ const bd=$('kyBoard');
+ bd.querySelectorAll('.fkey').forEach(b=>{b.classList.remove('next');b.querySelectorAll('i').forEach(x=>x.classList.remove('on'));});
+ const ch=FPOS[u]?u:KBASE[u], pos=FPOS[ch];
+ if(!pos) return '';
+ const b=bd.querySelector(`.fkey[data-i="${pos.i}"]`);b.classList.add('next');
+ if(pos.d>0){const x=b.querySelector('i.'+FDIR[pos.d]);if(x)x.classList.add('on');}
+ const dir=['タップ','左にはじく','上にはじく','右にはじく','下にはじく'][pos.d];
+ return `「${FLICK[pos.i][0]}」のキーを${dir}`+(KBASE[u]&&!FPOS[u]?' → 「゛゜小」キー':'');
+}
+function showSel(){
+ const info=$('kyInfo'), word=$('kyWord').value.trim();
+ if(word){
+  const y=word.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+  if(kyMode==='roma'){
+   const r=prefRoma(y,0,{});
+   info.innerHTML=`${esc(word)} → <b>${esc(r)}</b><small>${r.length} 打。数字は打つ順番です。</small>`;
+   markKeys([...r]);
+  }else{
+   info.innerHTML=`${esc(word)}<small>フリック入力では1文字ずつ下の表で確かめられます（${[...y].length} 文字）。</small>`;
+   markFlick('');
+  }
+  return;
+ }
+ if(!kySel){info.innerHTML='<small>下の表から文字を選ぶか、言葉を入れてください。</small>';if(kyMode==='roma')markKeys([]);else markFlick('');return;}
+ if(kyMode==='roma'){
+  const ro=romaOf(kySel);
+  if(kySel==='っ'){info.innerHTML=`っ → <b>kka</b> などの重ね打ち / <b>xtu</b><small>${esc(ro.note)}</small>`;markKeys(['x','t','u']);return;}
+  info.innerHTML=`${esc(kySel)} → <b>${esc(ro.main)}</b>${ro.alts.length?`<small>ほかの打ち方: ${esc(ro.alts.join(' / '))}${ro.note?' · '+esc(ro.note):''}</small>`:ro.note?`<small>${esc(ro.note)}</small>`:''}`;
+  markKeys(ro.keys);
+ }else{
+  if(kySel.length>1){
+   const parts=[...kySel].map(c=>markFlick(c));
+   const how=[...kySel].map((c,i)=>`「${c}」: ${parts[i]}`).join(' / ');
+   markFlick(kySel[0]);
+   info.innerHTML=`${esc(kySel)}<small>${esc(how)}</small>`;
+  }else{
+   const how=markFlick(kySel);
+   info.innerHTML=`${esc(kySel)}<small>${esc(how||'フリックキーボードにない文字です')}</small>`;
+  }
+ }
+}
+$('kyWord').addEventListener('input',()=>{kySel=null;$('kyTable').querySelectorAll('.kt-cell').forEach(b=>b.setAttribute('aria-pressed','false'));showSel();});
+$('kyBack').onclick=()=>openTitle();
 $('tiExit').onclick=()=>{
  showScreen('bye');$('byeMsg').textContent='画面を閉じています…';
  try{window.close();}catch(_){}
