@@ -591,6 +591,11 @@ body.osk-on{padding-bottom:260px}
         <div><h4>苦手なキー</h4><div class="wk" id="cKeys"></div></div>
         <div><h4>苦手な文字</h4><div class="wk" id="cKana"></div></div>
       </div>
+      <div class="cgrid">
+        <div><h4>入力に時間がかかるキー</h4><div class="wk" id="cSlowKeys"></div></div>
+        <div><h4>入力に時間がかかる文字</h4><div class="wk" id="cSlowKana"></div></div>
+      </div>
+      <div><h4>打ち始めに時間がかかる問題</h4><ul class="wl" id="cSlowWords"></ul></div>
       <div><h4>よく間違える問題</h4><ul class="wl" id="cWords"></ul></div>
       <div class="drill">
         <h4>練習問題を作る</h4>
@@ -1126,7 +1131,7 @@ function startGame(opts){
  if(!pool.length){if(prac)alert('この練習問題には、かなで入力できる問題がありません。');return;}
  if(document.activeElement) document.activeElement.blur();
  if(G) stopTimers();
- G={kana,test,kpend:'',chars:0,pool:byLength(pool),pi:0,used:new Set(),prac,quota:prac?pool.length:0,title:prac?opts.title:'',missKana:{},missWords:[],score:0,correct:0,miss:0,combo:0,maxCombo:0,tier:0,comboBonus:0,cleared:0,failed:0,
+ G={kana,test,kpend:'',chars:0,kt:{},pool:byLength(pool),pi:0,used:new Set(),prac,quota:prac?pool.length:0,title:prac?opts.title:'',missKana:{},missWords:[],score:0,correct:0,miss:0,combo:0,maxCombo:0,tier:0,comboBonus:0,cleared:0,failed:0,
     hist:[],missKeys:{},dur:prac?0:test?test.sec*1000:S.minutes*60000,t0:0,running:false,done:false,timers:[],raf:0,
     limitP:prac||test?null:limitParams(),mode:prac||test?'normal':S.mode,level:S.level,stageName:prac?'練習':stageOf(S.stage).name,
     catNames:prac?[opts.title]:stageOf(S.stage).cats.filter(c=>S.cats.includes(c.id)).map(c=>c.name),cfg:{...S,show:{...S.show}}};
@@ -1173,6 +1178,7 @@ function showWord(first){
  if(!G.nextW){finish(false);return;}
  G.w=G.nextW;pickNext();
  G.i=0;G.buf='';G.typed='';G.kpend='';G.memo={};G.wordMiss=0;G.wStart=performance.now();
+ G.lastT=null;G.uI=0;G.uSum=0;G.uN=0;   // 入力時間の計測（前の打鍵からの間隔・文字ごとの時間）
  const total=prefRoma(G.w.y,0,G.memo).length;
  G.wLimit=G.limitP?(G.limitP.base+G.limitP.pc*total)*1000:0;
  $('wbarWrap').classList.toggle('none',!G.wLimit);
@@ -1245,9 +1251,9 @@ function tryKana(k){
  return false;
 }
 function onType(k){
- const expect=G.expect;
+ const expect=G.expect, iBefore=G.i;
  if(G.kana?tryKana(k):tryKey(k)){
-  if(!G.kana) lrKey(k,true);
+  if(!G.kana){lrKey(k,true);timeKey(k,iBefore);}
   G.typed+=k;G.correct++;G.combo++;G.maxCombo=Math.max(G.maxCombo,G.combo);
   G.score+=G.level+(G.combo>=60?2:G.combo>=30?1:0);           // 1打 1〜6点
   if(G.tier<4&&G.combo>=30*(G.tier+1)){                          // 30打ごとの連続ボーナス(最大4回)
@@ -1875,7 +1881,7 @@ document.addEventListener('keydown',e=>{
 /* ===================== 学習記録（AIコーチ） ===================== */
 // すべての打鍵・ミス・問題ごとの成績をこのブラウザの localStorage に記録し、苦手を分析して練習問題を作る。
 const LKEY='yougoda-learn';
-const LD=Object.assign({keys:{},conf:{},kana:{},words:{},sessions:[]},store.get(LKEY,{}));
+const LD=Object.assign({keys:{},conf:{},kana:{},words:{},sessions:[],kt:{},ut:{},all:{n:0,s:0},st:{n:0,s:0}},store.get(LKEY,{}));
 const saveLearn=()=>store.set(LKEY,LD);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ALLW=STAGES.filter(s=>s.id!=='all').flatMap(s=>s.cats.flatMap(c=>c.words));
@@ -1885,6 +1891,32 @@ function unitsOf(y,upto){const memo={},out=[],end=upto==null?y.length:upto;let i
 function lrKey(k,ok,typed){
  const r=LD.keys[k]||(LD.keys[k]={h:0,m:0});ok?r.h++:r.m++;
  if(!ok&&typed&&typed!==k){const c=LD.conf[k]||(LD.conf[k]={});c[typed]=(c[typed]||0)+1;}
+}
+// 入力までの時間（ローマ字入力のときだけ記録）。
+//  ・キー: 1つ前の正しい打鍵からの間隔（LD.kt）。問題の最初の1打は読む時間を含むので別扱い
+//  ・文字: その文字（しゃ・っ など）を打つ間の打鍵間隔の平均（LD.ut）
+//  ・打ち始め: 問題が出てから最初の1打までの時間（LD.st と問題ごとの rs/rn）
+// 2.5秒を超える間隔は「手が止まっていた」とみなして集計しない。
+const PAUSE=2500;
+const addT=(o,ms)=>{o.n++;o.s+=ms;};
+function timeKey(k,iBefore){
+ const now=performance.now();
+ if(G.lastT==null){
+  const rt=now-Math.max(G.wStart,G.t0);
+  if(rt>0&&rt<6000){addT(LD.st,rt);if(!G.w.gen){const r=LD.words[wkey(G.w)]||(LD.words[wkey(G.w)]={d:G.w.d,y:G.w.y,st:G.w.stage,c:G.w.cat,s:0,m:0,f:0,cl:0});r.rs=(r.rs||0)+rt;r.rn=(r.rn||0)+1;}}
+ }else{
+  const dt=now-G.lastT;
+  if(dt>0&&dt<PAUSE){
+   addT(LD.kt[k]||(LD.kt[k]={n:0,s:0}),dt);addT(LD.all,dt);
+   const gk=G.kt[k]||(G.kt[k]={n:0,s:0});addT(gk,dt);
+   G.uSum+=dt;G.uN++;
+  }
+ }
+ G.lastT=now;
+ if(G.i>iBefore){            // 文字（入力単位）を打ち終えた
+  if(G.uN){const lab=unitLabel(G.w.y,G.uI,G.i-G.uI);addT(LD.ut[lab]||(LD.ut[lab]={n:0,s:0}),G.uSum/G.uN);}
+  G.uI=G.i;G.uSum=0;G.uN=0;
+ }
 }
 function lrWordEnd(ok){
  const w=G.w;
@@ -1922,7 +1954,23 @@ function analyze(){
  const words=all.filter(r=>(r.m||r.f)&&r.cl<3).map(r=>({...r,score:(r.m+3*r.f)/Math.max(1,r.s)*Math.pow(.5,r.cl)})).sort((a,b)=>b.score-a.score);
  const mastered=all.filter(r=>(r.m||r.f)&&r.cl>=3).length;
  let hit=0,miss=0;Object.values(LD.keys).forEach(r=>{hit+=r.h;miss+=r.m;});
- return {keys,kana,words,mastered,seenWords:all.length,hit,miss,sessions:LD.sessions};
+ const sp=speedAnalysis();
+ return {keys,kana,words,mastered,seenWords:all.length,hit,miss,sessions:LD.sessions,...sp};
+}
+// 入力までの時間から「遅い（迷っている）キー・文字・問題」を判断する。
+// 平均の打鍵間隔と比べた倍率で並べる。回数が少ないものは平均に寄せて（+5回分）偶然の遅れで上位に来ないようにする。
+function speedAnalysis(){
+ const avg=LD.all&&LD.all.n?LD.all.s/LD.all.n:null;
+ if(!avg) return {avgMs:null,slowKeys:[],slowKana:[],slowWords:[],avgStart:null};
+ const ratio=o=>((o.s+avg*5)/(o.n+5))/avg;
+ const slowKeys=Object.entries(LD.kt||{}).filter(([k,o])=>o.n>=8&&k!==' ').map(([k,o])=>({k,ms:o.s/o.n,n:o.n,r:ratio(o)}))
+   .filter(x=>x.r>=1.15).sort((a,b)=>b.r-a.r);
+ const slowKana=Object.entries(LD.ut||{}).filter(([k,o])=>o.n>=4&&/[ぁ-ゖー]/.test(k)).map(([k,o])=>({k,ms:o.s/o.n,n:o.n,r:ratio(o)}))
+   .filter(x=>x.r>=1.15).sort((a,b)=>b.r-a.r);
+ const avgStart=LD.st&&LD.st.n?LD.st.s/LD.st.n:null;
+ const slowWords=avgStart?Object.values(LD.words).filter(r=>r.rn>=2).map(r=>({...r,ms:r.rs/r.rn}))
+   .filter(r=>r.ms>=Math.max(avgStart*1.5,900)).sort((a,b)=>b.ms-a.ms):[];
+ return {avgMs:avg,slowKeys,slowKana,slowWords,avgStart};
 }
 
 function coachComments(A){
@@ -1950,6 +1998,12 @@ function coachComments(A){
  if(k){let t=`いちばん苦手なキーは「${k.k}」（${FINGER[k.k]||'指の担当なし'}）。ミス率 ${(k.m/k.n*100).toFixed(1)}%。`;if(k.conf.length)t+=`よく「${k.conf.join('」「')}」と打ち間違えています。`;out.push(t);}
  const ka=A.kana[0];
  if(ka) out.push(`苦手な文字は「${ka.k===' '?'スペース':ka.k}」。${kanaTip(ka.k)}`);
+ const sk=A.slowKeys[0];
+ if(sk) out.push(`入力までの時間を見ると、「${sk.k}」（${FINGER[sk.k]||'指の担当なし'}）は打つまでに平均 ${(sk.ms/1000).toFixed(2)} 秒かかっていて、ほかのキーの ${sk.r.toFixed(1)} 倍です。ミスは少なくても、指が迷っている可能性があります。`);
+ const sa=A.slowKana[0];
+ if(sa) out.push(`文字では「${sa.k}」を打つのに時間がかかっています（1打あたり平均の ${sa.r.toFixed(1)} 倍）。${kanaTip(sa.k)}`);
+ const sw=A.slowWords[0];
+ if(sw) out.push(`「${sw.d}」は、問題が出てから打ち始めるまでに平均 ${(sw.ms/1000).toFixed(1)} 秒かかっています（全体の平均は ${(A.avgStart/1000).toFixed(1)} 秒）。読み方を思い出すのに迷っているようです。`);
  const w=A.words[0];
  if(w) out.push(`「${w.d}」で ${w.m+w.f} 回つまずいています。練習問題で重点的に出題します。`);
  if(A.mastered) out.push(`これまでに ${A.mastered} 問を克服しました（間違えた問題を3回連続ノーミスで卒業）。`);
@@ -1961,7 +2015,11 @@ function gameComments(g){
  const ka=Object.entries(g.missKana).sort((a,b)=>b[1]-a[1])[0];
  if(!g.correct&&!g.miss){out.push('1打も入力されなかったので、今回は記録していません。日本語入力（IME）がオフになっているか確認して、もう一度挑戦してみましょう。');return out;}
  if(!g.miss&&!g.cleared){out.push('ここまでミスはありませんが、1問も打ち終える前に終了しました。最後まで打ち切ってみましょう。');return out;}
- if(!g.miss){out.push('ノーミス！この調子で、レベルや制限時間を一段上げてみましょう。');return out;}
+ const slowG=(()=>{const es=Object.entries(g.kt||{}).filter(([k,o])=>o.n>=3&&k!==' ');if(es.length<3)return null;
+   const tot=es.reduce((a,[,o])=>a+o.s,0)/es.reduce((a,[,o])=>a+o.n,0);
+   const top=es.map(([k,o])=>({k,ms:o.s/o.n})).sort((a,b)=>b.ms-a.ms)[0];return top.ms>=tot*1.3?{...top,avg:tot}:null;})();
+ if(!g.miss){out.push('ノーミス！この調子で、レベルや制限時間を一段上げてみましょう。');if(slowG)out.push(`ただ「${slowG.k}」は打つまでに平均 ${(slowG.ms/1000).toFixed(2)} 秒（今回の平均 ${(slowG.avg/1000).toFixed(2)} 秒）かかっていました。迷わず打てるようになると、もっと速くなります。`);return out;}
+ if(slowG) out.push(`入力までの時間では「${slowG.k}」がいちばん遅く、平均 ${(slowG.ms/1000).toFixed(2)} 秒（今回の平均 ${(slowG.avg/1000).toFixed(2)} 秒）でした。`);
  if(ka) out.push(`今回いちばんミスした文字は「${ka[0]===' '?'スペース':ka[0]}」（${ka[1]}回）。${kanaTip(ka[0])}`);
  if(mk) out.push(`キーでは「${mk[0]}」（${FINGER[mk[0]]||'指の担当なし'}）のミスが ${mk[1]} 回。`);
  const ws=[...new Set(g.missWords.map(w=>w.d))].slice(0,3);
@@ -1989,22 +2047,25 @@ function genKey(k){
  return Array.from({length:4},()=>rnd(pool)).join('');
 }
 const DTYPES=[
- {v:'mix',name:'おまかせ（AIミックス）',desc:'間違えた問題の復習＋苦手な文字・キーを含む問題を、AIが組み合わせて出題'},
+ {v:'mix',name:'おまかせ（AIミックス）',desc:'間違えた問題・打ち始めが遅い問題の復習＋ミスが多い・時間がかかる文字やキーを含む問題を、AIが組み合わせて出題'},
  {v:'review',name:'間違えた問題の復習',desc:'ミス・時間切れがあった問題だけ。3回連続ノーミスで卒業'},
  {v:'kana',name:'苦手文字ドリル',desc:'苦手な文字（っ・ん・しゃ など）の練習用文字列と、それを含む用語'},
  {v:'keys',name:'苦手キー特訓',desc:'苦手なキーを何度も打つ、かなの練習用文字列'}
 ];
 function makeDrill(type,n){
  const A=analyze();
- const kk=A.kana.filter(x=>/^[ぁ-ゖー]+$/.test(x.k));
- const wk=kk.length?kk.slice(0,5).map(x=>x.k):DEF_KANA.slice();
+ // ミスの多い文字に、時間のかかる文字を足す（重複は除く）
+ const kk=[...A.kana.filter(x=>/^[ぁ-ゖー]+$/.test(x.k)).slice(0,4).map(x=>x.k),...A.slowKana.filter(x=>/^[ぁ-ゖー]+$/.test(x.k)).slice(0,2).map(x=>x.k)];
+ const wk=kk.length?[...new Set(kk)].slice(0,5):DEF_KANA.slice();
  const kw={};wk.forEach((k,i)=>kw[k]=5-i);
- const wkeys=A.keys.length?A.keys.slice(0,5).map(x=>x.k):['j','h','y','t'];
+ const wk0=[...A.keys.slice(0,4).map(x=>x.k),...A.slowKeys.slice(0,2).map(x=>x.k)];
+ const wkeys=wk0.length?[...new Set(wk0)].slice(0,5):['j','h','y','t'];
  const keyW={};wkeys.forEach((k,i)=>keyW[k]=(5-i)/5);
  const byKey=new Map(ALLW.map(w=>[wkey(w),w]));
  const items=[], used=new Set();
  const add=(w,why)=>{const k=wkey(w);if(used.has(k)||items.length>=n)return;used.add(k);items.push({...w,why});};
- const review=A.words.map(r=>byKey.get(r.d+'|'+r.y)).filter(Boolean);
+ const review=[...A.words,...A.slowWords.slice(0,5)].map(r=>byKey.get(r.d+'|'+r.y)).filter(Boolean);
+ const slowSet=new Set(A.slowWords.map(r=>r.d+'|'+r.y));
  const scored=()=>ALLW.filter(w=>!used.has(wkey(w))).map(w=>{
    let s=0,hit=null,khit=null;
    unitsOf(w.y).forEach(u=>{if(kw[u]){s+=kw[u];hit=hit||u;}});
@@ -2013,7 +2074,7 @@ function makeDrill(type,n){
   }).sort((a,b)=>b.s-a.s);
  const why=x=>x.hit?`苦手文字「${x.hit}」`:x.khit?`苦手キー「${x.khit}」`:'おすすめ';
  if(type==='review'){
-  review.forEach(w=>add(w,'復習'));
+  review.forEach(w=>add(w,slowSet.has(wkey(w))&&!A.words.some(r=>r.d===w.d&&r.y===w.y)?'復習（打ち始めが遅い）':'復習'));
  }else if(type==='kana'){
   const ng=Math.ceil(n*.4), base=Math.min(wk.length,3);
   for(let i=0;i<ng;i++){const lab=wk[i%base];items.push(genItem(genKana(lab),`生成・${lab}`));}
@@ -2024,7 +2085,7 @@ function makeDrill(type,n){
   for(let i=0;ks.length&&items.length<Math.ceil(n*.7);i++){const k=ks[i%Math.min(ks.length,3)];items.push(genItem(genKey(k),`生成・キー ${k}`));}
   scored().forEach(x=>x.khit&&add(x.w,why(x)));
  }else{
-  review.slice(0,Math.ceil(n*.4)).forEach(w=>add(w,'復習'));
+  review.slice(0,Math.ceil(n*.4)).forEach(w=>add(w,slowSet.has(wkey(w))&&!A.words.some(r=>r.d===w.d&&r.y===w.y)?'復習（打ち始めが遅い）':'復習'));
   const ng=Math.min(3,Math.floor(n*.15));
   for(let i=0;i<ng;i++){const lab=wk[i%wk.length];items.push(genItem(genKana(lab),`生成・${lab}`));}
   scored().forEach(x=>add(x.w,why(x)));
@@ -2040,12 +2101,19 @@ function renderCoach(){
  const A=analyze();
  $('cMsg').innerHTML='<div class="who">AIコーチより</div>'+coachComments(A).map(t=>`<p>${esc(t)}</p>`).join('');
  const tot=A.hit+A.miss;
- const st=[['記録した打鍵',tot,'打'],['通算の正確率',tot?(A.hit/tot*100).toFixed(1):'—','%'],['練習回数',A.sessions.length,'回'],['打った問題の種類',A.seenWords,'問'],['復習待ちの問題',A.words.length,'問'],['克服した問題',A.mastered,'問']];
+ const st=[['記録した打鍵',tot,'打'],['通算の正確率',tot?(A.hit/tot*100).toFixed(1):'—','%'],['平均の打鍵間隔',A.avgMs?(A.avgMs/1000).toFixed(2):'—','秒'],['練習回数',A.sessions.length,'回'],['打った問題の種類',A.seenWords,'問'],['復習待ちの問題',A.words.length,'問'],['克服した問題',A.mastered,'問']];
  $('cStats').innerHTML=st.map(s=>`<div><dt>${s[0]}</dt><dd>${s[1]}<small>${s[2]}</small></dd></div>`).join('');
  const kTop=A.keys.slice(0,6), kMax=kTop.length?kTop[0].m/kTop[0].n:1;
  $('cKeys').innerHTML=kTop.length?kTop.map(x=>`<div class="wk-row"><kbd>${esc(x.k)}</kbd><div><div class="meter"><i style="width:${(x.m/x.n/kMax*100).toFixed(0)}%"></i></div><small>ミス ${x.m} / ${x.n} 打（${(x.m/x.n*100).toFixed(1)}%）· ${FINGER[x.k]||'指の担当なし'}${x.conf.length?` · よく「${esc(x.conf.join('」「'))}」と打ち間違え`:''}</small></div></div>`).join(''):'<p class="hint">まだ十分な記録がありません。</p>';
  const aTop=A.kana.slice(0,6), aMax=aTop.length?aTop[0].rate:1;
  $('cKana').innerHTML=aTop.length?aTop.map(x=>`<div class="wk-row"><span class="kn">${x.k===' '?'␣':esc(x.k)}</span><div><div class="meter"><i style="width:${(x.rate/aMax*100).toFixed(0)}%"></i></div><small>ミス ${x.m} 回 / 打てた ${x.n} 回 · ${esc(kanaTip(x.k))}</small></div></div>`).join(''):'<p class="hint">まだ十分な記録がありません。</p>';
+ const none='<p class="hint">まだ十分な記録がありません（ローマ字入力で何回か練習すると表示されます）。</p>';
+ const sk=A.slowKeys.slice(0,6), skMax=sk.length?sk[0].r:1;
+ $('cSlowKeys').innerHTML=sk.length?sk.map(x=>`<div class="wk-row"><kbd>${esc(x.k)}</kbd><div><div class="meter"><i style="width:${(x.r/skMax*100).toFixed(0)}%"></i></div><small>平均 ${(x.ms/1000).toFixed(2)} 秒（全体の ${x.r.toFixed(1)} 倍）· ${x.n} 打 · ${FINGER[x.k]||'指の担当なし'}</small></div></div>`).join(''):none;
+ const sa=A.slowKana.slice(0,6), saMax=sa.length?sa[0].r:1;
+ $('cSlowKana').innerHTML=sa.length?sa.map(x=>`<div class="wk-row"><span class="kn">${esc(x.k)}</span><div><div class="meter"><i style="width:${(x.r/saMax*100).toFixed(0)}%"></i></div><small>1打あたり ${(x.ms/1000).toFixed(2)} 秒（全体の ${x.r.toFixed(1)} 倍）· ${x.n} 回 · ${esc(kanaTip(x.k))}</small></div></div>`).join(''):none;
+ const swl=A.slowWords.slice(0,9);
+ $('cSlowWords').innerHTML=swl.length?swl.map(r=>`<li><b>${esc(r.d)}</b><small>${esc(r.y)} · ${esc(r.st)}／${esc(r.c)}</small><small>打ち始めまで平均 ${(r.ms/1000).toFixed(1)} 秒（全体の平均 ${(A.avgStart/1000).toFixed(1)} 秒）· ${r.rn} 回</small></li>`).join(''):'<li class="hint">まだ目立って遅い問題はありません。</li>';
  const wl=A.words.slice(0,12);
  $('cWords').innerHTML=wl.length?wl.map(r=>`<li><b>${esc(r.d)}</b><small>${esc(r.y)} · ${esc(r.st)}／${esc(r.c)}</small><small>出題 ${r.s} 回 · ミス ${r.m} 打 · 不正解 ${r.f} 回 · 連続ノーミス ${r.cl}/3</small></li>`).join(''):'<li class="hint">間違えた問題はまだありません。</li>';
  // 練習問題
@@ -2059,7 +2127,7 @@ function renderCoach(){
 $('dStart').onclick=()=>{lastTest=false;if(DR.items.length)startGame({items:DR.items,title:`${DTYPES.find(t=>t.v===DR.type).name}（${DR.items.length}問）`});};
 $('dRemake').onclick=()=>{remakeDrill();renderCoach();};
 $('cBack').onclick=()=>goBack();
-$('cReset').onclick=()=>{if(!confirm('苦手の記録をすべて消去します。よろしいですか？'))return;Object.assign(LD,{keys:{},conf:{},kana:{},words:{},sessions:[]});saveLearn();remakeDrill();renderCoach();};
+$('cReset').onclick=()=>{if(!confirm('苦手の記録をすべて消去します。よろしいですか？'))return;Object.assign(LD,{keys:{},conf:{},kana:{},words:{},sessions:[],kt:{},ut:{},all:{n:0,s:0},st:{n:0,s:0}});saveLearn();remakeDrill();renderCoach();};
 
 /* ===================== タイトル・設定・終了 ===================== */
 let backTo='setup';
