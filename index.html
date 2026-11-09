@@ -218,6 +218,60 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .daystat dt{font-size:12px;color:var(--muted);font-weight:700}
 .daystat dd{margin:0;font-family:var(--f-mono);font-size:20px}
 .daystat dd small{font-size:12px;color:var(--muted);font-family:var(--f-body);margin-left:4px}
+/* アクセントカラー（設定 → カラー）。既定の藍は :root の値 */
+:root[data-accent="green"]{--accent:#1f7a5a;--accent-soft:rgba(31,122,90,.11)}
+:root[data-accent="purple"]{--accent:#6a3fb0;--accent-soft:rgba(106,63,176,.10)}
+:root[data-accent="orange"]{--accent:#b4561a;--accent-soft:rgba(180,86,26,.10)}
+@media (prefers-color-scheme: dark){
+ :root[data-accent="green"]:not([data-theme="light"]){--accent:#7fd3b0;--accent-soft:rgba(127,211,176,.14)}
+ :root[data-accent="purple"]:not([data-theme="light"]){--accent:#c4a8f5;--accent-soft:rgba(196,168,245,.14)}
+ :root[data-accent="orange"]:not([data-theme="light"]){--accent:#ffb27a;--accent-soft:rgba(255,178,122,.14)}}
+:root[data-theme="dark"][data-accent="green"]{--accent:#7fd3b0;--accent-soft:rgba(127,211,176,.14)}
+:root[data-theme="dark"][data-accent="purple"]{--accent:#c4a8f5;--accent-soft:rgba(196,168,245,.14)}
+:root[data-theme="dark"][data-accent="orange"]{--accent:#ffb27a;--accent-soft:rgba(255,178,122,.14)}
+
+/* タイトル画面 */
+body.titling .top{display:none}
+.title{min-height:calc(100vh - 80px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding-block:12px}
+.t-logo{margin:0;font-weight:400;font-family:var(--f-display);font-size:clamp(64px,16vw,128px);line-height:1;letter-spacing:.04em;position:relative}
+.t-logo::after{content:"";position:absolute;left:4%;right:4%;bottom:-10px;height:6px;background:var(--marker);z-index:-1}
+.t-sub{font-family:var(--f-mono);font-size:12px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
+.t-tag{margin:0;color:var(--muted);max-width:34em;font-size:14px;text-wrap:balance}
+.t-menu{display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px}
+.t-btn{display:grid;grid-template-columns:2.4em 1fr;align-items:center;text-align:left;gap:2px 12px;padding:12px 16px;border:2px solid var(--ink);border-radius:10px;background:var(--surface)}
+.t-btn .k{grid-row:span 2;font-family:var(--f-mono);font-size:12px;color:var(--muted);border:1.5px solid var(--line);border-radius:5px;text-align:center;padding:2px 0}
+.t-btn b{font-size:19px;letter-spacing:.12em}
+.t-btn small{font-size:12px;color:var(--muted)}
+.t-btn:hover{background:var(--accent-soft)}
+.t-btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.t-btn.primary small,.t-btn.primary .k{color:inherit;opacity:.8;border-color:currentColor}
+.t-btn.primary:hover{filter:brightness(1.08)}
+.t-stats{display:flex;gap:8px 22px;flex-wrap:wrap;justify-content:center;font-size:13px;color:var(--muted)}
+.t-stats b{font-family:var(--f-hand);color:var(--red);font-size:18px}
+.t-links{display:flex;gap:10px}
+.logo-btn{background:none;border:0;padding:0;color:inherit;cursor:pointer}
+/* 設定画面 */
+.setgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 28px}
+@media (max-width:760px){.setgrid{grid-template-columns:1fr}}
+.setgrid section{display:flex;flex-direction:column;gap:10px;min-width:0}
+.setgrid h3{margin:0;font-size:14px;letter-spacing:.08em}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13.5px}
+.row>span:first-child{min-width:5.5em;color:var(--muted);font-weight:700}
+.row input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.sw{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border:1.5px solid var(--line);border-radius:999px;background:var(--surface);font-size:13.5px}
+.sw i{width:22px;height:22px;border-radius:50%;background:var(--c)}
+.sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 1.5px var(--ink) inset}
+.goallist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.goallist li{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.goallist li span{flex:1;min-width:0;overflow-wrap:anywhere;color:var(--muted)}
+.goallist li b{font-family:var(--f-mono)}
+.goallist li button{background:none;border:1.5px solid var(--line);border-radius:6px;padding:2px 10px;font-size:12px}
+/* 終了画面 */
+.bye{min-height:calc(100vh - 80px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
+.bye h2{font-family:var(--f-hand);font-size:clamp(30px,6vw,46px);color:var(--red);margin:0;font-weight:600}
+.bye p{margin:0;color:var(--muted);max-width:30em}
+
 /* くらべる（目標・平均） */
 .goal{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
 .goal input{font:inherit;font-family:var(--f-mono);font-size:15px;width:7em;padding:5px 8px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
@@ -346,14 +400,68 @@ body.osk-on{padding-bottom:260px}
 <body>
 <main class="wrap">
   <header class="top">
-    <div class="logo"><span class="logo-k">用語打</span><span class="logo-r">yougo-da</span></div>
+    <button class="logo logo-btn" id="logoBtn" type="button" aria-label="タイトルへ"><span class="logo-k">用語打</span><span class="logo-r">yougo-da</span></button>
     <p class="tag">学術用語・日常の言葉・英語で鍛えるタイピング練習アプリ。AIコーチが苦手なキー・文字・問題を記録して、あなた専用の練習問題を作ります。</p>
     <button id="rankBtn" class="ghost" type="button">ランキング</button>
     <button id="coachBtn" class="ghost" type="button">AIコーチ</button>
-    <button id="soundBtn" class="ghost" type="button">効果音: ON</button>
+    <button id="setBtn" class="ghost" type="button">設定</button>
   </header>
 
-  <section id="scr-setup">
+  <section id="scr-title">
+    <div class="title">
+      <div class="t-sub">yougo-da · typing practice</div>
+      <h1 class="t-logo">用語打</h1>
+      <p class="t-tag">学術用語・日常の言葉・英語で鍛えるタイピング練習。AIコーチが苦手を記録して、あなた専用の練習問題を作ります。</p>
+      <nav class="t-menu" aria-label="メニュー">
+        <button id="tiPlay" class="t-btn primary" type="button"><span class="k">1</span><b>プレイ</b><small>科目・レベルを選んで練習する</small></button>
+        <button id="tiTest" class="t-btn" type="button"><span class="k">2</span><b>テスト</b><small>検定テスト（100点満点）を受ける</small></button>
+        <button id="tiSet" class="t-btn" type="button"><span class="k">3</span><b>設定</b><small>サウンド・カラー・表示する文字・目標</small></button>
+        <button id="tiExit" class="t-btn" type="button"><span class="k">4</span><b>終了</b><small>ウェブサイトを閉じる</small></button>
+      </nav>
+      <div class="t-stats" id="tiStats"></div>
+      <div class="t-links"><button id="tiRank" class="ghost" type="button">ランキング</button><button id="tiCoach" class="ghost" type="button">AIコーチ</button></div>
+    </div>
+  </section>
+
+  <section id="scr-settings" hidden>
+    <div class="sheet">
+      <div class="sheet-head"><span class="ttl">設定</span><span>変更はすぐに保存されます</span></div>
+      <div class="setgrid">
+        <section>
+          <h3>サウンド</h3>
+          <div class="row"><span>効果音</span><div class="seg" id="stSound"></div></div>
+          <div class="row"><span><label for="stVol">音量</label></span><input id="stVol" type="range" min="0" max="100" step="5"><output id="stVolOut" class="pool"></output><button id="stTry" class="ghost" type="button">鳴らしてみる</button></div>
+        </section>
+        <section>
+          <h3>カラー</h3>
+          <div class="row"><span>テーマ</span><div class="seg" id="stTheme"></div></div>
+          <div class="row"><span>アクセント</span><div class="swatches" id="stAccent"></div></div>
+        </section>
+        <section>
+          <h3>表示する文字</h3>
+          <div id="shows" class="chips"></div>
+          <p class="hint">プレイ中のカードに表示する段を選びます。標準はふりがな・漢字かな・ローマ字の3段表示。</p>
+        </section>
+        <section>
+          <h3>目標</h3>
+          <div class="goal"><label for="sgTest">検定テストの目標点数（100点満点）</label><input id="sgTest" type="number" min="0" max="100" step="5" inputmode="numeric" placeholder="未設定"><span>点</span></div>
+          <div class="goal"><label for="sgPlay" id="sgPlayL">プレイの目標点数</label><input id="sgPlay" type="number" min="0" step="10" inputmode="numeric" placeholder="未設定"><span>点</span></div>
+          <ul class="goallist" id="sgList"></ul>
+        </section>
+      </div>
+      <div class="actions"><button id="stBack" class="start" type="button">タイトルへ戻る</button><button id="stPlay" class="ghost" type="button">プレイへ</button><p class="hint">Esc でタイトルへ</p></div>
+    </div>
+  </section>
+
+  <section id="scr-bye" hidden>
+    <div class="bye">
+      <h2>おつかれさまでした</h2>
+      <p id="byeMsg">画面を閉じています…</p>
+      <button id="byeBack" class="ghost" type="button">タイトルに戻る</button>
+    </div>
+  </section>
+
+  <section id="scr-setup" hidden>
     <div class="setup">
       <div class="col">
         <div>
@@ -365,21 +473,16 @@ body.osk-on{padding-bottom:260px}
           <div id="cats" class="chips"></div>
         </div>
         <div>
-          <h2 class="sec-h"><span class="n">03</span>表示する文字</h2>
-          <div id="shows" class="chips"></div>
-          <p class="hint">標準はふりがな・漢字かな・ローマ字の3段表示。</p>
-        </div>
-        <div>
-          <h2 class="sec-h"><span class="n">04</span>入力方法</h2>
+          <h2 class="sec-h"><span class="n">03</span>入力方法</h2>
           <div id="inputs" class="seg"></div>
           <p class="hint" id="inputHint"></p>
         </div>
       </div>
       <div class="col">
-        <div><h2 class="sec-h"><span class="n">05</span>レベル（読みの文字数）</h2><div id="levels" class="seg"></div><p class="hint" id="levelHint">英語は英字2文字をかな1字として数えます（Lv.1 は約5〜12字、Lv.4 は約23〜48字）。</p></div>
-        <div><h2 class="sec-h"><span class="n">06</span>プレイ時間</h2><div id="times" class="seg"></div></div>
+        <div><h2 class="sec-h"><span class="n">04</span>レベル（読みの文字数）</h2><div id="levels" class="seg"></div><p class="hint" id="levelHint">英語は英字2文字をかな1字として数えます（Lv.1 は約5〜12字、Lv.4 は約23〜48字）。</p></div>
+        <div><h2 class="sec-h"><span class="n">05</span>プレイ時間</h2><div id="times" class="seg"></div></div>
         <div>
-          <h2 class="sec-h"><span class="n">07</span>1問ごとの制限時間</h2>
+          <h2 class="sec-h"><span class="n">06</span>1問ごとの制限時間</h2>
           <div id="limits" class="seg"></div>
           <div id="customBox" class="custom" hidden>
             <label for="customRange">1打あたり</label>
@@ -388,14 +491,14 @@ body.osk-on{padding-bottom:260px}
           </div>
           <p class="hint" id="limitHint"></p>
         </div>
-        <div><h2 class="sec-h"><span class="n">08</span>ルール</h2><div id="modes" class="modes"></div></div>
+        <div><h2 class="sec-h"><span class="n">07</span>ルール</h2><div id="modes" class="modes"></div></div>
         <div class="startbox">
           <div class="pool" id="poolInfo"></div>
           <div class="best" id="bestInfo"></div>
           <div class="goal"><label for="goalIn">この条件の目標点数</label><input id="goalIn" type="number" min="0" step="10" inputmode="numeric" placeholder="未設定"><span>点</span></div>
           <button id="startBtn" class="start" type="button">スタート</button>
           <button id="testBtn" class="ghost testbtn" type="button"><b>検定テスト（100点満点）</b><small>全科目から出題・単語/短文/長文 各60秒。特級合格レベルで100点</small></button>
-          <p class="hint">Enter でも開始できます。日本語入力（IME）はオフにしてください。スマホ・タブレットでは画面キーボードで遊べます。</p>
+          <p class="hint">Enter でも開始できます。日本語入力（IME）はオフにしてください。スマホ・タブレットでは画面キーボードで遊べます。表示する文字・効果音・カラーは「設定」で変えられます。Esc でタイトルへ。</p>
           <button id="coachBtn2" class="ghost" type="button">AIコーチ：苦手の分析と練習問題 →</button>
         </div>
       </div>
@@ -911,7 +1014,7 @@ const SHOWS=[{k:'hira',label:'ひらがな（ふりがな）'},{k:'kanji',label:
 const RANKS=[{min:4.5,r:'S',t:'教授級'},{min:3.5,r:'A',t:'准教授級'},{min:2.6,r:'B',t:'研究員級'},{min:1.7,r:'C',t:'院生級'},{min:0,r:'D',t:'学部生級'}];
 
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
-const S=Object.assign({stage:'math',cats:null,level:1,minutes:1,limit:'normal',custom:.5,mode:'normal',show:{hira:true,kanji:true,kata:false,roma:true},sound:true,input:'roma',name:''},store.get('yougoda-settings',{}));
+const S=Object.assign({stage:'math',cats:null,level:1,minutes:1,limit:'normal',custom:.5,mode:'normal',show:{hira:true,kanji:true,kata:false,roma:true},sound:true,vol:.8,theme:'auto',accent:'blue',input:'roma',name:''},store.get('yougoda-settings',{}));
 const stageOf=id=>STAGES.find(s=>s.id===id)||STAGES[0];
 if(!Array.isArray(S.cats)||!S.cats.length) S.cats=stageOf(S.stage).cats.map(c=>c.id);
 const save=()=>store.set('yougoda-settings',S);
@@ -954,13 +1057,6 @@ function renderSetup(){
  $('catAll').textContent=allOn?'すべて解除':'すべて選択';
  $('catAll').onclick=()=>{S.cats=allOn?[]:st.cats.map(c=>c.id);renderSetup();};
 
- const shEl=$('shows');shEl.innerHTML='';
- SHOWS.forEach(o=>{
-  const b=el('button','chip',`<span class="box"></span>${o.label}`);
-  b.setAttribute('aria-pressed',!!S.show[o.k]);
-  b.onclick=()=>{const nx={...S.show,[o.k]:!S.show[o.k]};if(Object.values(nx).some(Boolean))S.show=nx;renderSetup();};
-  shEl.appendChild(b);
- });
 
  $('levelHint').hidden=S.stage!=='eng'&&S.stage!=='all';
  segment($('inputs'),INPUTS.map(o=>({v:o.v,html:`${o.label}<small>${o.sub}</small>`})),S.input,v=>S.input=v);
@@ -988,7 +1084,6 @@ function renderSetup(){
  const best=store.get(bestKey(),null);
  $('bestInfo').innerHTML=best?`この条件の自己ベスト <b>${best}</b> 点`:'この条件の自己ベストはまだありません';
  bindGoal($('goalIn'),curPlayCfg());
- $('soundBtn').textContent='効果音: '+(S.sound?'ON':'OFF');
  save();
 }
 function segment(root,items,cur,set){
@@ -996,7 +1091,7 @@ function segment(root,items,cur,set){
  items.forEach(it=>{const b=el('button','',it.html);b.setAttribute('aria-pressed',it.v===cur);b.onclick=()=>{set(it.v);renderSetup();};root.appendChild(b);});
 }
 $('customRange').addEventListener('input',e=>{S.custom=parseFloat(e.target.value);renderSetup();});
-$('soundBtn').onclick=()=>{S.sound=!S.sound;renderSetup();};
+
 
 /* ===================== 効果音 ===================== */
 let AC=null;
@@ -1005,7 +1100,7 @@ function tone(f,d,type='triangle',v=.04,delay=0){
  try{
   AC=AC||new (window.AudioContext||window.webkitAudioContext)();
   const t=AC.currentTime+delay,o=AC.createOscillator(),g=AC.createGain();
-  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(Math.max(.0002,v*(S.vol??.8)*1.25),t);g.gain.exponentialRampToValueAtTime(.0001,t+d);
   o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.02);
  }catch(e){}
 }
@@ -1013,9 +1108,9 @@ const sfx={key:()=>tone(1400,.03,'triangle',.025),miss:()=>tone(130,.14,'sawtoot
  bonus:()=>{[660,880,1100,1320].forEach((f,i)=>tone(f,.1,'square',.025,i*.06));},fail:()=>tone(220,.2,'square',.035),end:()=>{[523,659,784].forEach((f,i)=>tone(f,.2,'triangle',.05,i*.12));}};
 
 /* ===================== ゲーム本体 ===================== */
-let G=null, screen='setup';
-function showScreen(s){screen=s;['setup','play','result','coach','test','rank'].forEach(n=>$('scr-'+n).hidden=n!==s);
- document.body.classList.toggle('playing',s==='play');applyOSK();window.scrollTo(0,0);}
+let G=null, screen='title';
+function showScreen(s){screen=s;['title','settings','bye','setup','play','result','coach','test','rank'].forEach(n=>$('scr-'+n).hidden=n!==s);
+ document.body.classList.toggle('playing',s==='play');document.body.classList.toggle('titling',s==='title'||s==='bye');applyOSK();window.scrollTo(0,0);}
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
 
@@ -1220,7 +1315,7 @@ function finish(gameover){
  sfx.end();
  if(G.test) testSectionDone(); else showResult();
 }
-function abort(){T=null;const p=G&&G.prac;if(G){stopTimers();G.done=true;}if(p)openCoach();else{showScreen('setup');renderSetup();}}
+function abort(){const p=G&&G.prac, t=G&&G.test;T=null;if(G){stopTimers();G.done=true;}if(p)openCoach();else if(t)openTitle();else{showScreen('setup');renderSetup();}}
 
 /* ===================== 検定テスト ===================== */
 // タイピング技能検定イータイピング・マスターの特級合格スコア（単語360・短文420・長文450）を各科目の100点とする。
@@ -1302,6 +1397,7 @@ function showTestResult(){
   }
  }
  $('rCoach').innerHTML='<div class="who">判定</div>'+out.map(t=>`<p>${esc(t)}</p>`).join('');
+ $('backBtn').textContent='タイトルへ';
  if(correct+miss>0) recordDay({test:total,keys:correct});
  comparePanel({test:true,stage:T.stage},{score:total,cpm:R.reduce((a,r)=>a+r.chars,0)/(secs/60)});
  rankAfter({test:true,stage:T.stage},{score:total,kps:secs?correct/secs:0,acc:correct+miss?correct/(correct+miss):0});
@@ -1310,7 +1406,7 @@ function showTestResult(){
 }
 $('testBtn').onclick=()=>startTest();
 $('tNext').onclick=()=>nextTestSection();
-$('tQuit').onclick=()=>{T=null;showScreen('setup');renderSetup();};
+$('tQuit').onclick=()=>{T=null;openTitle();};
 
 /* ===================== 日ごとの記録 ===================== */
 // LD.days[YYYY-MM-DD] = {kps 最高速度, acc その時の正確率, test 検定テスト最高点, plays 回数, keys 正しく打った数}
@@ -1531,7 +1627,7 @@ async function postRK(){
 }
 // --- ランキング画面
 let rankKind='play';
-function openRank(){showScreen('rank');renderRank();}
+function openRank(){markBack();showScreen('rank');renderRank();}
 function renderRank(){
  const days=rankKind==='days';
  $('kName').parentElement.hidden=days; $('kReset').hidden=days;
@@ -1556,7 +1652,7 @@ function renderRank(){
 }
 $('kName').oninput=e=>{S.name=e.target.value;save();};
 $('rankBtn').onclick=()=>openRank();
-$('kBack').onclick=()=>{showScreen('setup');renderSetup();};
+$('kBack').onclick=()=>goBack();
 $('kReset').onclick=()=>{
  const cfg=rankKind==='test'?{test:true,stage:'all'}:{stage:S.stage,level:S.level,minutes:S.minutes,limit:S.limit,mode:S.mode,input:S.input};
  if(!confirm(`「${boardLabel(cfg)}」のこの端末のランキングを消します。よろしいですか？`))return;
@@ -1597,6 +1693,7 @@ function showResult(){
  if(!g.hist.length) h.innerHTML='<li class="hint">まだ1問も打ち終えていません。</li>';
  g.hist.forEach(x=>{const li=el('li',x.ok?'ok':'ng');li.append(span('mk',x.ok?'○':'×'),span('w',x.d));h.appendChild(li);});
  $('rCoach').innerHTML='<div class="who">AIコーチのひとこと</div>'+gameComments(g).map(t=>`<p>${esc(t)}</p>`).join('');
+ $('backBtn').textContent='プレイ設定に戻る';
  if(g.prac){$('rRank').hidden=true;$('rCmp').hidden=true;}
  else comparePanel({stage:g.cfg.stage,level:g.cfg.level,minutes:g.cfg.minutes,limit:g.cfg.limit,mode:g.cfg.mode,input:g.kana?'kana':'roma'},{score:g.score,cpm:g.chars/(g.elapsed/60)});
  if(!g.prac) rankAfter({stage:g.cfg.stage,level:g.cfg.level,minutes:g.cfg.minutes,limit:g.cfg.limit,mode:g.cfg.mode,input:g.kana?'kana':'roma'},{score:g.score,kps,acc});
@@ -1608,7 +1705,7 @@ $('retryBtn').onclick=retry;
 $('drillNow').onclick=()=>{lastTest=false;startGame({items:makeDrill('mix',15),title:'AIミックス（15問）'});};
 $('toCoach').onclick=()=>openCoach();
 $('coachBtn').onclick=$('coachBtn2').onclick=()=>openCoach();
-$('backBtn').onclick=()=>{showScreen('setup');renderSetup();};
+$('backBtn').onclick=()=>{if(lastTest)openTitle();else{showScreen('setup');renderSetup();}};
 
 /* ===================== キー入力 ===================== */
 // 物理キーボードと画面キーボードの共通入口。正しく打てたら true
@@ -1750,19 +1847,28 @@ document.addEventListener('keydown',e=>{
  }else if(screen==='setup'){
   const a=document.activeElement, onCtrl=a&&a!==document.body&&/BUTTON|INPUT/.test(a.tagName);
   if(e.key==='Enter'&&!onCtrl){e.preventDefault();if(!$('startBtn').disabled){lastTest=false;startGame();}}
+  else if(e.key==='Escape'&&!(a&&a.tagName==='INPUT')){e.preventDefault();openTitle();}
  }else if(screen==='result'){
   const a=document.activeElement, onBtn=a&&/BUTTON|INPUT/.test(a.tagName);
   if(a&&a.tagName==='INPUT') return;
   if((e.key==='Enter'||e.key===' ')&&!onBtn){e.preventDefault();retry();}
-  else if(e.key==='Escape'){showScreen('setup');renderSetup();}
+  else if(e.key==='Escape'){$('backBtn').click();}
  }else if(screen==='rank'){
-  if(e.key==='Escape'&&!(document.activeElement&&document.activeElement.tagName==='INPUT')){showScreen('setup');renderSetup();}
+  if(e.key==='Escape'&&!(document.activeElement&&document.activeElement.tagName==='INPUT')){goBack();}
  }else if(screen==='test'){
   if(document.activeElement&&document.activeElement.tagName==='INPUT') return;
   if(e.key==='Enter'){e.preventDefault();nextTestSection();}
-  else if(e.key==='Escape'){T=null;showScreen('setup');renderSetup();}
+  else if(e.key==='Escape'){T=null;openTitle();}
  }else if(screen==='coach'){
-  if(e.key==='Escape'){showScreen('setup');renderSetup();}
+  if(e.key==='Escape'){goBack();}
+ }else if(screen==='title'){
+  const n={'1':'tiPlay','2':'tiTest','3':'tiSet','4':'tiExit'}[e.key];
+  if(n){e.preventDefault();$(n).click();}
+  else if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const bs=[...document.querySelectorAll('.t-menu button')],i=bs.indexOf(document.activeElement);bs[(i+(e.key==='ArrowDown'?1:bs.length-1+(i<0?1:0)))%bs.length].focus();}
+ }else if(screen==='settings'){
+  if(e.key==='Escape'&&!(document.activeElement&&document.activeElement.tagName==='INPUT')){openTitle();}
+ }else if(screen==='bye'){
+  if(e.key==='Escape'||e.key==='Enter'){e.preventDefault();openTitle();}
  }
 });
 
@@ -1929,7 +2035,7 @@ function makeDrill(type,n){
 /* ===================== AIコーチ画面 ===================== */
 const DR={type:'mix',count:20,items:null};
 function remakeDrill(){DR.items=makeDrill(DR.type,DR.count);}
-function openCoach(){if(!DR.items)remakeDrill();showScreen('coach');renderCoach();}
+function openCoach(){markBack();if(!DR.items)remakeDrill();showScreen('coach');renderCoach();}
 function renderCoach(){
  const A=analyze();
  $('cMsg').innerHTML='<div class="who">AIコーチより</div>'+coachComments(A).map(t=>`<p>${esc(t)}</p>`).join('');
@@ -1952,10 +2058,87 @@ function renderCoach(){
 }
 $('dStart').onclick=()=>{lastTest=false;if(DR.items.length)startGame({items:DR.items,title:`${DTYPES.find(t=>t.v===DR.type).name}（${DR.items.length}問）`});};
 $('dRemake').onclick=()=>{remakeDrill();renderCoach();};
-$('cBack').onclick=()=>{showScreen('setup');renderSetup();};
+$('cBack').onclick=()=>goBack();
 $('cReset').onclick=()=>{if(!confirm('苦手の記録をすべて消去します。よろしいですか？'))return;Object.assign(LD,{keys:{},conf:{},kana:{},words:{},sessions:[]});saveLearn();remakeDrill();renderCoach();};
 
+/* ===================== タイトル・設定・終了 ===================== */
+let backTo='setup';
+function markBack(){if(screen==='title'||screen==='setup')backTo=screen;}
+function goBack(){if(backTo==='title')openTitle();else{showScreen('setup');renderSetup();}}
+function applyLook(){
+ const r=document.documentElement;
+ if(S.theme==='light'||S.theme==='dark') r.dataset.theme=S.theme; else delete r.dataset.theme;
+ if(S.accent&&S.accent!=='blue') r.dataset.accent=S.accent; else delete r.dataset.accent;
+}
+function openTitle(){T=null;showScreen('title');renderTitle();setTimeout(()=>{try{$('tiPlay').focus({preventScroll:true});}catch(_){}} ,0);}
+function renderTitle(){
+ const tb=store.get('yougoda-test-best',null);
+ ensureDays();
+ const today=LD.days[dayKey(Date.now())];
+ const parts=[];
+ if(tb!=null) parts.push(`検定テスト自己ベスト <b>${tb}</b> 点`);
+ const g=getGoal('test-all'); if(g!=null) parts.push(`検定テストの目標 <b>${g}</b> 点`);
+ if(today&&today.kps) parts.push(`今日の最高速度 <b>${today.kps.toFixed(2)}</b> 打/秒`);
+ $('tiStats').innerHTML=parts.map(x=>`<span>${x}</span>`).join('');
+ $('tiStats').hidden=!parts.length;
+}
+const THEMES=[{v:'auto',l:'自動'},{v:'light',l:'ライト'},{v:'dark',l:'ダーク'}];
+const ACCENTS=[{v:'blue',l:'藍',c:'#2446a6'},{v:'green',l:'翠',c:'#1f7a5a'},{v:'purple',l:'紫',c:'#6a3fb0'},{v:'orange',l:'橙',c:'#b4561a'}];
+function parseBoard(b){
+ if(b==='test-all') return {test:true,stage:'all'};
+ const m=b.match(/^play-(\w+)-l(\d+)-m(\d+)-(\w+)-(\w+)-(\w+)$/);
+ return m?{stage:m[1],level:+m[2],minutes:+m[3],limit:m[4],mode:m[5],input:m[6]}:null;
+}
+function openSettings(){markBack();showScreen('settings');renderSettings();}
+function renderSettings(){
+ const seg=(root,items,cur,set)=>{root.innerHTML='';items.forEach(it=>{const b=el('button','',it.l);b.setAttribute('aria-pressed',it.v===cur);b.onclick=()=>{set(it.v);save();applyLook();renderSettings();};root.appendChild(b);});};
+ seg($('stSound'),[{v:true,l:'ON'},{v:false,l:'OFF'}],!!S.sound,v=>S.sound=v);
+ $('stVol').value=Math.round((S.vol??.8)*100);$('stVolOut').textContent=$('stVol').value+'%';
+ seg($('stTheme'),THEMES,S.theme||'auto',v=>S.theme=v);
+ const ac=$('stAccent');ac.innerHTML='';
+ ACCENTS.forEach(a=>{const b=el('button','sw',`<i style="--c:${a.c}"></i>${a.l}`);b.setAttribute('aria-pressed',(S.accent||'blue')===a.v);b.onclick=()=>{S.accent=a.v;save();applyLook();renderSettings();};ac.appendChild(b);});
+ const shEl=$('shows');shEl.innerHTML='';
+ SHOWS.forEach(o=>{
+  const b=el('button','chip',`<span class="box"></span>${o.label}`);
+  b.setAttribute('aria-pressed',!!S.show[o.k]);
+  b.onclick=()=>{const nx={...S.show,[o.k]:!S.show[o.k]};if(Object.values(nx).some(Boolean))S.show=nx;save();renderSettings();};
+  shEl.appendChild(b);
+ });
+ bindGoal($('sgTest'),{test:true,stage:'all'},renderGoalList);
+ const pc=curPlayCfg();
+ $('sgPlayL').textContent=`プレイの目標点数（${boardLabel(pc)}）`;
+ bindGoal($('sgPlay'),pc,renderGoalList);
+ renderGoalList();
+}
+function renderGoalList(){
+ const ents=Object.entries(S.goals||{}).map(([b,v])=>({b,v,c:parseBoard(b)})).filter(x=>x.c);
+ const ul=$('sgList');ul.innerHTML='';
+ if(!ents.length){ul.innerHTML='<li><span>まだ目標はありません。プレイの目標は、科目やレベルなどの条件ごとに保存されます。</span></li>';return;}
+ ents.forEach(x=>{const li=el('li');const sp=el('span');sp.textContent=boardLabel(x.c);const bv=el('b');bv.textContent=x.v+'点';
+  const del=el('button','','削除');del.onclick=()=>{setGoal(x.b,0);renderSettings();};li.append(sp,bv,del);ul.appendChild(li);});
+}
+$('stVol').addEventListener('input',e=>{S.vol=(+e.target.value)/100;$('stVolOut').textContent=e.target.value+'%';save();});
+$('stTry').onclick=()=>{const was=S.sound;S.sound=true;sfx.clear();S.sound=was;};
+$('stBack').onclick=()=>openTitle();
+$('stPlay').onclick=()=>{showScreen('setup');renderSetup();};
+$('setBtn').onclick=()=>openSettings();
+$('logoBtn').onclick=()=>openTitle();
+$('tiPlay').onclick=()=>{showScreen('setup');renderSetup();};
+$('tiTest').onclick=()=>startTest();
+$('tiSet').onclick=()=>openSettings();
+$('tiRank').onclick=()=>openRank();
+$('tiCoach').onclick=()=>openCoach();
+$('tiExit').onclick=()=>{
+ showScreen('bye');$('byeMsg').textContent='画面を閉じています…';
+ try{window.close();}catch(_){}
+ // ブラウザは「スクリプトで開いたタブ」か「履歴が1ページだけのタブ」しか閉じさせないため、閉じられなかったときの案内
+ setTimeout(()=>{$('byeMsg').textContent='このブラウザでは自動で閉じられませんでした。タブやウィンドウを閉じて終了してください。';},500);
+};
+$('byeBack').onclick=()=>openTitle();
+
+applyLook();
 renderSetup();
+openTitle();
 </script>
 </body>
 </html>
