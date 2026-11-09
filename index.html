@@ -218,6 +218,24 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .daystat dt{font-size:12px;color:var(--muted);font-weight:700}
 .daystat dd{margin:0;font-family:var(--f-mono);font-size:20px}
 .daystat dd small{font-size:12px;color:var(--muted);font-family:var(--f-body);margin-left:4px}
+/* くらべる（目標・平均） */
+.goal{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.goal input{font:inherit;font-family:var(--f-mono);font-size:15px;width:7em;padding:5px 8px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.goal input:focus{border-color:var(--accent);outline:none}
+.cmpbox{border:1.5px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.cmpbox h4{margin:0}
+.cmp{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px 12px;align-items:center;margin:0}
+.cmp dt{font-size:13px;color:var(--muted);font-weight:700;white-space:nowrap}
+.cmp .bar{height:10px;background:var(--paper);border-radius:3px;overflow:hidden}
+.cmp .bar i{display:block;height:100%;border-radius:0 3px 3px 0;background:var(--muted);opacity:.55}
+.cmp .bar i.me{background:var(--accent);opacity:1}
+.cmp .bar i.goal{background:var(--red);opacity:.8}
+.cmp dd{margin:0;font-family:var(--f-mono);font-size:15px;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.cmp dd small{font-family:var(--f-body);font-size:11.5px;color:var(--muted);margin-left:4px}
+.cmpmsg{margin:0;font-size:14px}
+.cmpmsg b{font-family:var(--f-hand);color:var(--red);font-size:18px}
+.cmpref{margin:0;font-size:12.5px;color:var(--muted)}
+.cmpref b{color:var(--ink);font-family:var(--f-mono)}
 /* 検定テスト */
 .testbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px;border-color:var(--ink)}
 .testbtn b{font-size:15px}
@@ -374,6 +392,7 @@ body.osk-on{padding-bottom:260px}
         <div class="startbox">
           <div class="pool" id="poolInfo"></div>
           <div class="best" id="bestInfo"></div>
+          <div class="goal"><label for="goalIn">この条件の目標点数</label><input id="goalIn" type="number" min="0" step="10" inputmode="numeric" placeholder="未設定"><span>点</span></div>
           <button id="startBtn" class="start" type="button">スタート</button>
           <button id="testBtn" class="ghost testbtn" type="button"><b>検定テスト（100点満点）</b><small>全科目から出題・単語/短文/長文 各60秒。特級合格レベルで100点</small></button>
           <p class="hint">Enter でも開始できます。日本語入力（IME）はオフにしてください。スマホ・タブレットでは画面キーボードで遊べます。</p>
@@ -429,6 +448,7 @@ body.osk-on{padding-bottom:260px}
         <div><h4>出題された問題</h4><ul class="hist" id="rHist"></ul></div>
       </div>
       <div class="coach-msg" id="rCoach"></div>
+      <div class="cmpbox" id="rCmp"></div>
       <div class="rankbox" id="rRank"></div>
       <div class="actions">
         <button id="retryBtn" class="start" type="button">もう一度</button>
@@ -967,6 +987,7 @@ function renderSetup(){
  $('startBtn').disabled=!pool.length;
  const best=store.get(bestKey(),null);
  $('bestInfo').innerHTML=best?`この条件の自己ベスト <b>${best}</b> 点`:'この条件の自己ベストはまだありません';
+ bindGoal($('goalIn'),curPlayCfg());
  $('soundBtn').textContent='効果音: '+(S.sound?'ON':'OFF');
  save();
 }
@@ -1010,7 +1031,7 @@ function startGame(opts){
  if(!pool.length){if(prac)alert('この練習問題には、かなで入力できる問題がありません。');return;}
  if(document.activeElement) document.activeElement.blur();
  if(G) stopTimers();
- G={kana,test,kpend:'',pool:byLength(pool),pi:0,used:new Set(),prac,quota:prac?pool.length:0,title:prac?opts.title:'',missKana:{},missWords:[],score:0,correct:0,miss:0,combo:0,maxCombo:0,tier:0,comboBonus:0,cleared:0,failed:0,
+ G={kana,test,kpend:'',chars:0,pool:byLength(pool),pi:0,used:new Set(),prac,quota:prac?pool.length:0,title:prac?opts.title:'',missKana:{},missWords:[],score:0,correct:0,miss:0,combo:0,maxCombo:0,tier:0,comboBonus:0,cleared:0,failed:0,
     hist:[],missKeys:{},dur:prac?0:test?test.sec*1000:S.minutes*60000,t0:0,running:false,done:false,timers:[],raf:0,
     limitP:prac||test?null:limitParams(),mode:prac||test?'normal':S.mode,level:S.level,stageName:prac?'練習':stageOf(S.stage).name,
     catNames:prac?[opts.title]:stageOf(S.stage).cats.filter(c=>S.cats.includes(c.id)).map(c=>c.name),cfg:{...S,show:{...S.show}}};
@@ -1140,7 +1161,7 @@ function onType(k){
   }else sfx.key();
   if(G.i>=G.w.y.length){
    const b=[10,13,16,19][G.level-1]+(G.wordMiss?0:4);           // 1問クリア 10〜23点
-   G.score+=b;G.cleared++;G.hist.push({d:G.w.d,ok:true});lrWordEnd(true);
+   G.score+=b;G.cleared++;G.chars+=[...G.w.y].length;G.hist.push({d:G.w.d,ok:true});lrWordEnd(true);
    pop(`+${b}`);sfx.clear();showWord();
   }else renderWord();
  }else{
@@ -1156,7 +1177,7 @@ function onType(k){
  updateHud();
 }
 function failWord(reason){
- G.failed++;G.hist.push({d:G.w.d,ok:false});lrWordEnd(false);
+ G.failed++;G.chars+=G.i;G.hist.push({d:G.w.d,ok:false});lrWordEnd(false);
  const fx=$('fx');fx.textContent='× '+reason;fx.classList.remove('show');void fx.offsetWidth;fx.classList.add('show');
  sfx.fail();showWord();updateHud();
 }
@@ -1192,6 +1213,7 @@ function finish(gameover){
  if(G.done) return;
  const raw=performance.now()-G.t0, elapsed=(G.dur?Math.min(G.dur,raw):raw)/1000;
  stopTimers();G.done=true;G.gameover=gameover;G.elapsed=Math.max(elapsed,.001);
+ if(G.w) G.chars+=G.i;   // 途中まで打った問題の文字数
  const tot=G.correct+G.miss;
  if(tot>0&&!G.test) recordDay({kps:G.correct/G.elapsed,acc:G.correct/tot,keys:G.correct});
  if(tot>0){LD.sessions.push({t:Date.now(),kps:+(G.correct/G.elapsed).toFixed(2),acc:+(G.correct/tot).toFixed(3),sc:G.score,p:G.prac});LD.sessions=LD.sessions.slice(-60);saveLearn();}
@@ -1226,8 +1248,10 @@ function showTestIntro(){
  $('tBody').innerHTML=`<div class="tsec">${TEST.map((t,i)=>{
    const r=T.res[i];
    return `<div class="${i===T.idx?'cur':r?'done':''}"><b>${t.name}テスト</b><small>${t.sec}秒 · 特級ライン ${t.line}pt</small>${r?`<span class="sc">${r.score}点</span><small>${Math.round(r.points)}pt · 正確率 ${(r.acc*100).toFixed(1)}%</small>`:i===T.idx?'<small>次はこのテストです</small>':''}</div>`;}).join('')}</div>
+  <div class="goal"><label for="tGoal">検定テストの目標点数（100点満点）</label><input id="tGoal" type="number" min="0" max="100" step="5" inputmode="numeric" placeholder="未設定"><span>点</span></div>
   <p class="tnote">${sec.name}を${sec.sec}秒間、できるだけ速く正確に打ってください。ミスしても打ち直せますが、正確率は2乗で効くので<b>ミスは大きく減点</b>されます。<br>ポイント = 正しく打った数 × 60 ÷ 秒 × 正確率²。特級ライン（${sec.line}pt）に届けば、この科目は100点です。3科目の平均が得点になります。<br>問題は設定画面の科目・カテゴリ・レベルに関係なく、全科目から出題されます。${S.input==='kana'?'<br>検定の基準がローマ字の打鍵数なので、テストはローマ字入力で行います。':''}</p>`;
  $('tNext').textContent=`${sec.name}テストを開始`;
+ bindGoal($('tGoal'),{test:true,stage:'all'});
  showScreen('test');
 }
 function nextTestSection(){
@@ -1238,7 +1262,7 @@ function nextTestSection(){
 function testSectionDone(){
  const g=G, tot=g.correct+g.miss;
  const r={name:g.test.name,line:g.test.line,correct:g.correct,miss:g.miss,elapsed:g.elapsed,acc:tot?g.correct/tot:0,
-   kps:g.correct/g.elapsed,hist:g.hist,missKeys:g.missKeys,missKana:g.missKana,missWords:g.missWords};
+   kps:g.correct/g.elapsed,chars:g.chars,hist:g.hist,missKeys:g.missKeys,missKana:g.missKana,missWords:g.missWords};
  r.points=testPoints(r); r.score=testScore(r.points,r.line);
  T.res.push(r); T.idx++;
  if(T.idx<TEST.length) showTestIntro(); else showTestResult();
@@ -1279,6 +1303,7 @@ function showTestResult(){
  }
  $('rCoach').innerHTML='<div class="who">判定</div>'+out.map(t=>`<p>${esc(t)}</p>`).join('');
  if(correct+miss>0) recordDay({test:total,keys:correct});
+ comparePanel({test:true,stage:T.stage},{score:total,cpm:R.reduce((a,r)=>a+r.chars,0)/(secs/60)});
  rankAfter({test:true,stage:T.stage},{score:total,kps:secs?correct/secs:0,acc:correct+miss?correct/(correct+miss):0});
  T=null;
  showScreen('result');
@@ -1421,6 +1446,55 @@ async function fillOnline(node,b,test,meT){
  try{const a=await onlineTop(b,20);node.innerHTML=rankList(a,test,meT);}
  catch(err){node.innerHTML=`<p class="rkmsg">読み込めませんでした（${esc(err.message)}）。</p>`;}
 }
+// --- 目標点数と平均（くらべる）
+const curPlayCfg=()=>({stage:S.stage,level:S.level,minutes:S.minutes,limit:S.limit,mode:S.mode,input:S.input});
+const getGoal=b=>{const v=(S.goals||{})[b];return typeof v==='number'&&v>0?v:null;};
+function setGoal(b,v){S.goals=Object.assign({},S.goals);if(v>0)S.goals[b]=v;else delete S.goals[b];save();}
+function bindGoal(input,cfg,after){
+ const b=boardOf(cfg), g=getGoal(b);
+ input.value=g==null?'':String(g);
+ input.oninput=()=>{const v=Math.max(0,Math.round(+input.value||0));setGoal(b,cfg.test?Math.min(100,v):v);if(after)after();};
+}
+const SKEY='yougoda-stats:';     // 条件ごとの {n:回数, sum:合計点}（自分の平均用）
+function addStat(b,score){const st=store.get(SKEY+b,{n:0,sum:0});st.n++;st.sum+=score;store.set(SKEY+b,st);return st;}
+async function onlineAvg(b){
+ const r=await fetch(`${fsBase()}/boards/${encodeURIComponent(b)}:runAggregationQuery?key=${encodeURIComponent(RANKING_CONFIG.apiKey)}`,{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({structuredAggregationQuery:{structuredQuery:{from:[{collectionId:'scores'}]},aggregations:[{alias:'avg',avg:{field:{fieldPath:'score'}}},{alias:'n',count:{}}]}})});
+ if(!r.ok) throw new Error('HTTP '+r.status);
+ const j=await r.json(), f=(j[0]&&j[0].result&&j[0].result.aggregateFields)||{};
+ return {avg:f.avg&&f.avg.nullValue===undefined?fsNum(f.avg):null,n:fsNum(f.n)};
+}
+// 参考: 文部科学省「情報活用能力調査（高等学校）」2017年度 — 高校生の1分あたりの文字入力数の平均
+const REF_CPM=24.7;
+function comparePanel(cfg,res){
+ const test=!!cfg.test, b=boardOf(cfg), score=test?res.score:Math.round(res.score);
+ const st=res.score>0?addStat(b,score):store.get(SKEY+b,{n:0,sum:0});
+ const fmtv=v=>v==null?'—':test?(+v).toFixed(1):String(Math.round(v));
+ let oa=null;   // みんなの平均 {avg,n} / {err:true}
+ const box=$('rCmp');box.hidden=false;
+ box.innerHTML=`<h4>くらべる <small class="hint">${esc(boardLabel(cfg))}</small></h4>
+  <p class="cmpmsg" id="cmpMsg"></p>
+  <dl class="cmp" id="cmpRows"></dl>
+  <div class="goal"><label for="rGoal">目標点数を変える</label><input id="rGoal" type="number" min="0" ${test?'max="100" step="5"':'step="10"'} inputmode="numeric" placeholder="未設定"><span>点</span></div>
+  <p class="cmpref">入力の速さ: 1分あたり <b>${(res.cpm||0).toFixed(1)}</b> 字（読みのかな・英字で数えています）。参考: 高校生の全国平均は <b>${REF_CPM}</b> 字/分（文部科学省 2017年度 情報活用能力調査。漢字かな交じり文を変換しながら入力した文字数なので、この数え方より少なめに出ます）。${online()?'':'みんなの平均は、オンラインランキングを設定すると表示されます。'}</p>`;
+ const draw=()=>{
+  const goal=getGoal(b), mine=st.n?st.sum/st.n:null;
+  const oNote=!online()?'未設定':!oa?'読み込み中':oa.err?'読み込めません':oa.n?`${oa.n}件`:'まだ記録なし';
+  const rows=[['今回',score,'me','点'],['目標',goal,'goal',goal==null?'未設定':'点'],
+   ['あなたの平均',mine,'',mine==null?'まだ記録なし':`点 · ${st.n}回`],['みんなの平均',oa&&oa.avg,'',oa&&oa.avg!=null?`点 · ${oNote}`:oNote]];
+  const max=Math.max(1,...rows.map(r=>+r[1]||0))*1.05;
+  $('cmpRows').innerHTML=rows.map(r=>`<dt>${r[0]}</dt><div class="bar"><i class="${r[2]}" style="width:${r[1]==null?0:Math.max(1,r[1]/max*100)}%"></i></div><dd>${fmtv(r[1])}<small>${r[3]}</small></dd>`).join('');
+  const parts=[];
+  if(goal!=null){const d=score-goal;parts.push(d>=0?`目標達成！ 目標を <b>${fmtv(d)}</b> 点上回りました。`:`目標まで あと <b>${fmtv(-d)}</b> 点。`);}
+  else parts.push('目標点数を入れると、毎回の結果と比べられます。');
+  if(oa&&oa.avg!=null){const d=score-oa.avg;parts.push(d>=0?`みんなの平均より ${fmtv(d)} 点高い結果です。`:`みんなの平均まで あと ${fmtv(-d)} 点。`);}
+  $('cmpMsg').innerHTML=parts.join(' ');
+ };
+ bindGoal($('rGoal'),cfg,draw);
+ draw();
+ if(online()) onlineAvg(b).then(o=>{oa=o;draw();}).catch(()=>{oa={err:true};draw();});
+}
+
 // --- 結果画面のランキング
 let RK=null;
 function rankAfter(cfg,res){
@@ -1523,8 +1597,9 @@ function showResult(){
  if(!g.hist.length) h.innerHTML='<li class="hint">まだ1問も打ち終えていません。</li>';
  g.hist.forEach(x=>{const li=el('li',x.ok?'ok':'ng');li.append(span('mk',x.ok?'○':'×'),span('w',x.d));h.appendChild(li);});
  $('rCoach').innerHTML='<div class="who">AIコーチのひとこと</div>'+gameComments(g).map(t=>`<p>${esc(t)}</p>`).join('');
- if(g.prac) $('rRank').hidden=true;
- else rankAfter({stage:g.cfg.stage,level:g.cfg.level,minutes:g.cfg.minutes,limit:g.cfg.limit,mode:g.cfg.mode,input:g.kana?'kana':'roma'},{score:g.score,kps,acc});
+ if(g.prac){$('rRank').hidden=true;$('rCmp').hidden=true;}
+ else comparePanel({stage:g.cfg.stage,level:g.cfg.level,minutes:g.cfg.minutes,limit:g.cfg.limit,mode:g.cfg.mode,input:g.kana?'kana':'roma'},{score:g.score,cpm:g.chars/(g.elapsed/60)});
+ if(!g.prac) rankAfter({stage:g.cfg.stage,level:g.cfg.level,minutes:g.cfg.minutes,limit:g.cfg.limit,mode:g.cfg.mode,input:g.kana?'kana':'roma'},{score:g.score,kps,acc});
  showScreen('result');
 }
 $('startBtn').onclick=()=>{lastTest=false;startGame();};
@@ -1683,6 +1758,7 @@ document.addEventListener('keydown',e=>{
  }else if(screen==='rank'){
   if(e.key==='Escape'&&!(document.activeElement&&document.activeElement.tagName==='INPUT')){showScreen('setup');renderSetup();}
  }else if(screen==='test'){
+  if(document.activeElement&&document.activeElement.tagName==='INPUT') return;
   if(e.key==='Enter'){e.preventDefault();nextTestSection();}
   else if(e.key==='Escape'){T=null;showScreen('setup');renderSetup();}
  }else if(screen==='coach'){
