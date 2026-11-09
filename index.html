@@ -254,6 +254,7 @@ body.titling .top{display:none}
 .setgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 28px}
 @media (max-width:760px){.setgrid{grid-template-columns:1fr}}
 .setgrid section{display:flex;flex-direction:column;gap:10px;min-width:0}
+.setgrid section.wide{grid-column:1/-1}
 .setgrid h3{margin:0;font-size:14px;letter-spacing:.08em}
 .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13.5px}
 .row>span:first-child{min-width:5.5em;color:var(--muted);font-weight:700}
@@ -291,9 +292,6 @@ body.titling .top{display:none}
 .cmpref{margin:0;font-size:12.5px;color:var(--muted)}
 .cmpref b{color:var(--ink);font-family:var(--f-mono)}
 /* 検定テスト */
-.testbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px;border-color:var(--ink)}
-.testbtn b{font-size:15px}
-.testbtn small{font-size:11.5px;color:var(--muted)}
 .tsec{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 @media (max-width:560px){.tsec{grid-template-columns:1fr}}
 .tsec>div{border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
@@ -438,11 +436,16 @@ body.osk-on{padding-bottom:260px}
           <div class="row"><span>アクセント</span><div class="swatches" id="stAccent"></div></div>
         </section>
         <section>
+          <h3>入力方法</h3>
+          <div id="inputs" class="seg"></div>
+          <p class="hint" id="inputHint"></p>
+        </section>
+        <section>
           <h3>表示する文字</h3>
           <div id="shows" class="chips"></div>
           <p class="hint">プレイ中のカードに表示する段を選びます。標準はふりがな・漢字かな・ローマ字の3段表示。</p>
         </section>
-        <section>
+        <section class="wide">
           <h3>目標</h3>
           <div class="goal"><label for="sgTest">検定テストの目標点数（100点満点）</label><input id="sgTest" type="number" min="0" max="100" step="5" inputmode="numeric" placeholder="未設定"><span>点</span></div>
           <div class="goal"><label for="sgPlay" id="sgPlayL">プレイの目標点数</label><input id="sgPlay" type="number" min="0" step="10" inputmode="numeric" placeholder="未設定"><span>点</span></div>
@@ -472,17 +475,12 @@ body.osk-on{padding-bottom:260px}
           <h2 class="sec-h"><span class="n">02</span>出題カテゴリ<button id="catAll" class="link" type="button">すべて選択</button></h2>
           <div id="cats" class="chips"></div>
         </div>
-        <div>
-          <h2 class="sec-h"><span class="n">03</span>入力方法</h2>
-          <div id="inputs" class="seg"></div>
-          <p class="hint" id="inputHint"></p>
-        </div>
       </div>
       <div class="col">
-        <div><h2 class="sec-h"><span class="n">04</span>レベル（読みの文字数）</h2><div id="levels" class="seg"></div><p class="hint" id="levelHint">英語は英字2文字をかな1字として数えます（Lv.1 は約5〜12字、Lv.4 は約23〜48字）。</p></div>
-        <div><h2 class="sec-h"><span class="n">05</span>プレイ時間</h2><div id="times" class="seg"></div></div>
+        <div><h2 class="sec-h"><span class="n">03</span>レベル（読みの文字数）</h2><div id="levels" class="seg"></div><p class="hint" id="levelHint">英語は英字2文字をかな1字として数えます（Lv.1 は約5〜12字、Lv.4 は約23〜48字）。</p></div>
+        <div><h2 class="sec-h"><span class="n">04</span>プレイ時間</h2><div id="times" class="seg"></div></div>
         <div>
-          <h2 class="sec-h"><span class="n">06</span>1問ごとの制限時間</h2>
+          <h2 class="sec-h"><span class="n">05</span>1問ごとの制限時間</h2>
           <div id="limits" class="seg"></div>
           <div id="customBox" class="custom" hidden>
             <label for="customRange">1打あたり</label>
@@ -491,14 +489,14 @@ body.osk-on{padding-bottom:260px}
           </div>
           <p class="hint" id="limitHint"></p>
         </div>
-        <div><h2 class="sec-h"><span class="n">07</span>ルール</h2><div id="modes" class="modes"></div></div>
+        <div><h2 class="sec-h"><span class="n">06</span>ルール</h2><div id="modes" class="modes"></div></div>
         <div class="startbox">
           <div class="pool" id="poolInfo"></div>
           <div class="best" id="bestInfo"></div>
           <div class="goal"><label for="goalIn">この条件の目標点数</label><input id="goalIn" type="number" min="0" step="10" inputmode="numeric" placeholder="未設定"><span>点</span></div>
           <button id="startBtn" class="start" type="button">スタート</button>
-          <button id="testBtn" class="ghost testbtn" type="button"><b>検定テスト（100点満点）</b><small>全科目から出題・単語/短文/長文 各60秒。特級合格レベルで100点</small></button>
-          <p class="hint">Enter でも開始できます。日本語入力（IME）はオフにしてください。スマホ・タブレットでは画面キーボードで遊べます。表示する文字・効果音・カラーは「設定」で変えられます。Esc でタイトルへ。</p>
+          <p class="hint" id="inputNow"></p>
+          <p class="hint">Enter でも開始できます。日本語入力（IME）はオフにしてください。スマホ・タブレットでは画面キーボードで遊べます。入力方法・表示する文字・効果音・カラーは「設定」で変えられます。検定テストはタイトル画面の「テスト」から受けられます。Esc でタイトルへ。</p>
           <button id="coachBtn2" class="ghost" type="button">AIコーチ：苦手の分析と練習問題 →</button>
         </div>
       </div>
@@ -1064,8 +1062,7 @@ function renderSetup(){
 
 
  $('levelHint').hidden=S.stage!=='eng'&&S.stage!=='all';
- segment($('inputs'),INPUTS.map(o=>({v:o.v,html:`${o.label}<small>${o.sub}</small>`})),S.input,v=>S.input=v);
- $('inputHint').textContent=S.input==='kana'?'画面下のフリックキーボードでかなを直接入力します。濁点・半濁点・小さい文字は「゛゜小」キーで付けます。英数字を含む問題と英語は出題されません。':'ローマ字で入力します（パソコンのキーボード、またはスマホの画面キーボード）。';
+ $('inputNow').textContent=`入力方法: ${S.input==='kana'?'かな（フリック入力）':'ローマ字'}（「設定」で変更）`;
  segment($('levels'),LEVELS.map(l=>({v:l.v,html:`${l.label}<small>${l.sub}</small>`})),S.level,v=>S.level=v);
  segment($('times'),TIMES.map(t=>({v:t,html:`${t}分`})),S.minutes,v=>S.minutes=v);
  segment($('limits'),LIMITS.map(l=>({v:l.v,html:l.label})),S.limit,v=>S.limit=v);
@@ -1410,7 +1407,6 @@ function showTestResult(){
  T=null;
  showScreen('result');
 }
-$('testBtn').onclick=()=>startTest();
 $('tNext').onclick=()=>nextTestSection();
 $('tQuit').onclick=()=>{T=null;openTitle();};
 
@@ -2165,6 +2161,8 @@ function renderSettings(){
  seg($('stTheme'),THEMES,S.theme||'auto',v=>S.theme=v);
  const ac=$('stAccent');ac.innerHTML='';
  ACCENTS.forEach(a=>{const b=el('button','sw',`<i style="--c:${a.c}"></i>${a.l}`);b.setAttribute('aria-pressed',(S.accent||'blue')===a.v);b.onclick=()=>{S.accent=a.v;save();applyLook();renderSettings();};ac.appendChild(b);});
+ seg($('inputs'),INPUTS.map(o=>({v:o.v,l:`${o.label}（${o.sub}）`})),S.input||'roma',v=>S.input=v);
+ $('inputHint').textContent=S.input==='kana'?'画面下のフリックキーボードでかなを直接入力します。濁点・半濁点・小さい文字は「゛゜小」キーで付けます。英数字を含む問題と英語は出題されません。検定テストはローマ字で行います。':'ローマ字で入力します（パソコンのキーボード、またはスマホの画面キーボード）。';
  const shEl=$('shows');shEl.innerHTML='';
  SHOWS.forEach(o=>{
   const b=el('button','chip',`<span class="box"></span>${o.label}`);
