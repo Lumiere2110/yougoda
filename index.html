@@ -281,6 +281,9 @@ body.titling .top{display:none}
 .kb-key.f-p{background:var(--f-p)}.kb-key.f-r{background:var(--f-r)}.kb-key.f-m{background:var(--f-m)}.kb-key.f-i{background:var(--f-i)}
 .kb-key.home::after{content:"";position:absolute;bottom:7px;left:50%;width:12px;height:2px;margin-left:-6px;border-radius:1px;background:var(--ink);opacity:.6}
 .kb-key.space{flex:6 1 0;font-family:var(--f-body);font-size:12px;color:var(--muted)}
+.kb-key.shift{flex:1.7 1 0;font-family:var(--f-body);font-size:11px;color:var(--muted)}
+.kb-key .sh{position:absolute;top:2px;left:4px;font-size:10px;line-height:1;color:var(--muted)}
+@media (max-width:560px){.kb-key .sh{font-size:8px;top:1px;left:2px}.kb-key.shift{font-size:9px}}
 .kb-key.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);z-index:1}
 .kb-key .ord{position:absolute;top:-9px;right:-7px;min-width:20px;height:20px;padding:0 4px;border-radius:10px;background:var(--accent);color:var(--on-accent);
   font-size:11px;font-weight:700;display:grid;place-items:center;font-family:var(--f-mono)}
@@ -506,7 +509,7 @@ body.osk-on{padding-bottom:260px}
         <div id="kyBoard"></div>
       </div>
       <div id="kyLegend"></div>
-      <div class="goal"><label for="kyWord">言葉を入れて調べる（ひらがな）</label><input id="kyWord" type="text" style="width:14em;font-family:var(--f-body)" placeholder="例: いんすうぶんかい" autocomplete="off"></div>
+      <div class="goal"><label for="kyWord">言葉を入れて調べる（ひらがな・英語）</label><input id="kyWord" type="text" style="width:14em;font-family:var(--f-body)" placeholder="例: いんすうぶんかい / I'm fine" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
       <div class="kt" id="kyTable"></div>
       <div class="actions"><button id="kyBack" class="start" type="button">タイトルへ戻る</button><p class="hint">Esc でタイトルへ</p></div>
     </div>
@@ -2257,6 +2260,11 @@ $('tiKeys').onclick=()=>openKeys();
 /* ===================== キー配置画面 ===================== */
 // 日本語（JIS）キーボードの配置。指ごとに色分けし、選んだ文字を打つキーを順番つきで光らせる。
 const KB_ROWS=['1234567890-^','qwertyuiop@[','asdfghjkl;:]','zxcvbnm,./'];
+// JIS キーボードで Shift を押しながら打つ記号（キー → 記号）
+const JIS_SHIFT={'1':'!','2':'"','3':'#','4':'$','5':'%','6':'&','7':"'",'8':'(','9':')','-':'=','^':'~','@':'`','[':'{',';':'+',':':'*',']':'}',',':'<','.':'>','/':'?'};
+const SHIFT_OF=Object.fromEntries(Object.entries(JIS_SHIFT).map(([k,v])=>[v,k]));
+// 英語・プログラミングの問題に出てくる記号
+const KT_SYMS=[['Shift と一緒に押す記号',["' \" ! ?","( ) { }","= + * #","< > % ~"]],['そのまま押す記号',[", . - /","; : [ ]","^ @ スペース"]]];
 const FCLS={'小指':'f-p','薬指':'f-r','中指':'f-m','人差し指':'f-i','親指':'f-t'};
 const fingerClass=k=>{const f=FINGER[k]||'';for(const n in FCLS)if(f.endsWith(n))return FCLS[n];return '';};
 const KT_ROWS=[
@@ -2269,6 +2277,9 @@ let kyMode='roma', kySel=null;
 function openKeys(){kyMode=S.input==='kana'?'kana':'roma';kySel=null;showScreen('keys');renderKeys();}
 function kyCells(row){return row.includes(' ')?row.split(' '):[...row];}
 function romaOf(u){
+ if(u==='スペース') return {main:'スペース',alts:[],keys:[' '],note:'親指で押します。英語の単語と単語の間に入れます。'};
+ if(SHIFT_OF[u]){const b=SHIFT_OF[u];return {main:`Shift＋${b}`,alts:[],keys:[u],note:`「${b}」のキーを Shift と一緒に押します。Shift は打つキーと反対の手の小指で押すと速く打てます（このキーは${FINGER[b]}なので${FINGER[b].startsWith('左')?'右':'左'}の Shift）。`};}
+ if(/^[,.\-\/;:\[\]^@]$/.test(u)) return {main:u,alts:[],keys:[u],note:`${FINGER[u]||''}で押します。Shift は使いません。`};
  if(u==='っ') return {main:'(次の子音を2回)',alts:['xtu','ltu'],keys:['x','t','u'],note:'次の文字の子音を2回打ちます（例: っか → kka）。単独なら xtu / ltu。'};
  if(u==='ん') return {main:'nn',alts:['n'],keys:['n','n'],note:'次が母音・や行・な行のときは nn。それ以外は n 1回でもOK。'};
  const o=YOON[u]||BASE[u]; if(!o) return null;
@@ -2280,19 +2291,20 @@ function renderKeys(){
  // 盤面
  const bd=$('kyBoard');
  if(kyMode==='roma'){
-  bd.innerHTML='<div class="kb-wrap"><div class="kb">'+KB_ROWS.map((r,i)=>`<div class="kb-row" style="padding-left:${i*2}%">${[...r].map(k=>`<div class="kb-key ${fingerClass(k)}${k==='f'||k==='j'?' home':''}" data-k="${esc(k)}" title="${esc(FINGER[k]||'')}">${esc(k)}</div>`).join('')}</div>`).join('')+
+  const keyHtml=k=>`<div class="kb-key ${fingerClass(k)}${k==='f'||k==='j'?' home':''}" data-k="${esc(k)}" title="${esc(FINGER[k]||'')}">${JIS_SHIFT[k]?`<span class="sh">${esc(JIS_SHIFT[k])}</span>`:''}${esc(k)}</div>`;
+  bd.innerHTML='<div class="kb-wrap"><div class="kb">'+KB_ROWS.map((r,i)=>`<div class="kb-row" style="padding-left:${i===3?0:i*2}%">${i===3?'<div class="kb-key shift f-p" data-k="ShiftL" title="左小指">Shift</div>':''}${[...r].map(keyHtml).join('')}${i===3?'<div class="kb-key shift f-p" data-k="ShiftR" title="右小指">Shift</div>':''}</div>`).join('')+
    '<div class="kb-row" style="padding-left:22%;padding-right:22%"><div class="kb-key space f-t" data-k=" " title="親指">スペース</div></div></div></div>';
-  $('kyLegend').innerHTML='<div class="kb-legend">'+[['f-p','小指'],['f-r','薬指'],['f-m','中指'],['f-i','人差し指'],['f-t','親指']].map(([c,l])=>`<span><i style="--c:var(--${c})"></i>${l}</span>`).join('')+'<span>（左右とも同じ色。F と J の下線はホームポジション）</span></div>'+
-   '<p class="hint" style="text-align:center">日本語（JIS）キーボードの配置です。英語（US）キーボードでは記号の位置が違います。</p>';
+  $('kyLegend').innerHTML='<div class="kb-legend">'+[['f-p','小指'],['f-r','薬指'],['f-m','中指'],['f-i','人差し指'],['f-t','親指']].map(([c,l])=>`<span><i style="--c:var(--${c})"></i>${l}</span>`).join('')+'<span>（左右とも同じ色。F と J の下線はホームポジション。キーの左上の小さな記号は Shift と一緒に押したときの文字）</span></div>'+
+   '<p class="hint" style="text-align:center">日本語（JIS）キーボードの配置です。英語（US）キーボードでは記号の位置が違います（例: アポストロフィー \' は US では Enter の左隣）。</p>';
  }else{
  bd.innerHTML='<div class="kfl"><div class="fgrid">'+FLICK.map((k,i)=>`<div class="fkey" data-i="${i}">`+(k[0]===FMOD?'<b>゛゜小</b>':`<b>${k[0]}</b>`+[1,2,3,4].map(d=>k[d]?`<i class="${FDIR[d]}">${k[d]}</i>`:'').join(''))+'</div>').join('')+'</div></div>';
   $('kyLegend').innerHTML='<p class="hint" style="text-align:center">タップで真ん中の文字、左・上・右・下にはじくとまわりの文字。濁点・半濁点・小さい文字は、元の文字のあとに「゛゜小」を押します。</p>';
  }
  // かな表
- $('kyTable').innerHTML=KT_ROWS.map(([h,rows])=>`<div><h4>${h}</h4><div class="kt-grid">${rows.map(r=>`<div class="kt-row" style="--n:${kyCells(r).length}">`+kyCells(r).map(u=>{
+ $('kyTable').innerHTML=(kyMode==='roma'?KT_ROWS.concat(KT_SYMS):KT_ROWS).map(([h,rows])=>`<div><h4>${h}</h4><div class="kt-grid">${rows.map(r=>`<div class="kt-row" style="--n:${kyCells(r).length}">`+kyCells(r).map(u=>{
    if(u==='_') return '<span class="kt-cell blank"></span>';
    const ro=romaOf(u);
-   return `<button type="button" class="kt-cell" data-u="${esc(u)}" aria-pressed="${kySel===u}"><b>${esc(u)}</b><small>${ro?esc(u==='っ'?'xtu':ro.main):''}</small></button>`;}).join('')+'</div>').join('')}</div></div>`).join('');
+   return `<button type="button" class="kt-cell" data-u="${esc(u)}" aria-pressed="${kySel===u}"><b>${esc(u)}</b><small>${ro?esc(u==='っ'?'xtu':SHIFT_OF[u]?'⇧'+SHIFT_OF[u]:u==='スペース'?'親指':ro.main):''}</small></button>`;}).join('')+'</div>').join('')}</div></div>`).join('');
  $('kyTable').querySelectorAll('.kt-cell[data-u]').forEach(b=>b.onclick=()=>{kySel=b.dataset.u;$('kyWord').value='';renderKeys();});
  showSel();
 }
@@ -2300,7 +2312,12 @@ function markKeys(seq){
  const bd=$('kyBoard');
  bd.querySelectorAll('.kb-key').forEach(k=>{k.classList.remove('on');const o=k.querySelector('.ord');if(o)o.remove();});
  const firsts={};
- seq.forEach((ch,i)=>{const k=bd.querySelector(`.kb-key[data-k="${CSS.escape(ch)}"]`);if(!k)return;k.classList.add('on');(firsts[ch]=firsts[ch]||[]).push(i+1);});
+ seq.forEach((ch,i)=>{
+  const base=SHIFT_OF[ch]||ch;
+  const k=bd.querySelector(`.kb-key[data-k="${CSS.escape(base)}"]`);if(!k)return;
+  k.classList.add('on');(firsts[base]=firsts[base]||[]).push(i+1);
+  if(SHIFT_OF[ch]){const sk=(FINGER[base]||'').startsWith('左')?'ShiftR':'ShiftL';bd.querySelector(`.kb-key[data-k="${sk}"]`).classList.add('on');(firsts[sk]=firsts[sk]||[]).push(i+1);}
+ });
  Object.entries(firsts).forEach(([ch,ns])=>{const k=bd.querySelector(`.kb-key[data-k="${CSS.escape(ch)}"]`);const o=el('span','ord');o.textContent=ns.length>3?ns.slice(0,3).join(',')+'…':ns.join(',');k.appendChild(o);});
 }
 function markFlick(u){
@@ -2319,7 +2336,8 @@ function showSel(){
   const y=word.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
   if(kyMode==='roma'){
    const r=prefRoma(y,0,{});
-   info.innerHTML=`${esc(word)} → <b>${esc(r)}</b><small>${r.length} 打。数字は打つ順番です。</small>`;
+   const nShift=[...r].filter(c=>SHIFT_OF[c]).length;
+   info.innerHTML=`${esc(word)} → <b>${esc(r)}</b><small>${r.length} 打。数字は打つ順番です。${nShift?`Shift を使う記号が ${nShift} 個あります。`:''}</small>`;
    markKeys([...r]);
   }else{
    info.innerHTML=`${esc(word)}<small>フリック入力では1文字ずつ下の表で確かめられます（${[...y].length} 文字）。</small>`;
