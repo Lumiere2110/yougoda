@@ -536,7 +536,7 @@ body.osk-on{padding-bottom:260px}
         </div>
       </div>
       <div class="col">
-        <div><h2 class="sec-h"><span class="n">03</span>レベル（読みの文字数）</h2><div id="levels" class="seg"></div><p class="hint" id="levelHint">英語は英字2文字をかな1字として数えます（Lv.1 は約5〜12字、Lv.4 は約23〜48字）。</p></div>
+        <div><h2 class="sec-h"><span class="n">03</span>レベル（読みの文字数）</h2><div id="levels" class="seg"></div><p class="hint" id="levelHint">英語（情報の「英語の用語・コード」を含む）は英字2文字をかな1字として数えます（Lv.1 は約5〜12字、Lv.4 は約23〜48字）。</p></div>
         <div><h2 class="sec-h"><span class="n">04</span>プレイ時間</h2><div id="times" class="seg"></div></div>
         <div>
           <h2 class="sec-h"><span class="n">05</span>1問ごとの制限時間</h2>
@@ -724,7 +724,122 @@ const STAGES = [
   {name:'ネットワーク',w:`通信|つうしん 回線|かいせん 帯域幅|たいいきはば パケット|ぱけっと プロトコル|ぷろとこる ルーター|るーたー スイッチ|すいっち IPアドレス|IPあどれす ドメイン名|どめいんめい サーバー|さーばー クライアント|くらいあんと ファイアウォール|ふぁいあうぉーる ポート番号|ぽーとばんごう サブネットマスク|さぶねっとますく デフォルトゲートウェイ|でふぉるとげーとうぇい 無線LAN|むせんLAN TCP/IP|TCP/IP 192.168.0.1|192.168.0.1 名前解決|なまえかいけつ 暗号化通信|あんごうかつうしん クラウドサービス|くらうどさーびす 負荷分散|ふかぶんさん 通信速度を測る|つうしんそくどをはかる レイテンシ|れいてんし OSI参照モデル|OSIさんしょうもでる 伝送遅延|でんそうちえん インターネット|いんたーねっと LAN|LAN WAN|WAN ハブ|はぶ モデム|もでむ アクセスポイント|あくせすぽいんと MACアドレス|MACあどれす DNSサーバー|DNSさーばー DHCP|DHCP HTTPS|HTTPS URL|URL ウェブブラウザ|うぇぶぶらうざ 電子メール|でんしめーる 光回線|ひかりかいせん 通信プロトコル|つうしんぷろとこる パケット交換方式|ぱけっとこうかんほうしき 回線交換方式|かいせんこうかんほうしき プライベートアドレス|ぷらいべーとあどれす グローバルアドレス|ぐろーばるあどれす ping|ping パケットをルーターが転送する|ぱけっとをるーたーがてんそうする IPアドレスで相手を特定する|IPあどれすであいてをとくていする ドメイン名をIPアドレスに変換|どめいんめいをIPあどれすにへんかん ウェブサーバーにリクエストを送る|うぇぶさーばーにりくえすとをおくる 無線LANに接続する|むせんLANにせつぞくする 通信速度は帯域幅で決まる|つうしんそくどはたいいきはばできまる TCPは信頼性の高い通信|TCPはしんらいせいのたかいつうしん ファイアウォールで通信を制限|ふぁいあうぉーるでつうしんをせいげん メールサーバーがメールを届ける|めーるさーばーがめーるをとどける ネットワークの階層モデル|ねっとわーくのかいそうもでる 回線が混雑して遅くなる|かいせんがこんざつしておそくなる クラウドにデータを保存する|くらうどにでーたをほぞんする 通信規格|つうしんきかく 有線接続|ゆうせんせつぞく 無線接続|むせんせつぞく 中継器|ちゅうけいき 通信量|つうしんりょう 回線速度|かいせんそくど 電波が弱い|でんぱがよわい 接続が切れる|せつぞくがきれる 再接続する|さいせつぞくする ウェブページを開く|うぇぶぺーじをひらく 検索エンジン|けんさくえんじん ハイパーリンク|はいぱーりんく 送信と受信|そうしんとじゅしん 動画を配信する|どうがをはいしんする 通信が混み合う|つうしんがこみあう`},
   {name:'セキュリティ',w:`暗号|あんごう 公開鍵|こうかいかぎ 秘密鍵|ひみつかぎ 共通鍵暗号|きょうつうかぎあんごう 公開鍵暗号方式|こうかいかぎあんごうほうしき 電子署名|でんししょめい 認証|にんしょう 二段階認証|にだんかいにんしょう 多要素認証|たようそにんしょう パスワード|ぱすわーど フィッシング|ふぃっしんぐ マルウェア|まるうぇあ ウイルス|ういるす ランサムウェア|らんさむうぇあ 脆弱性|ぜいじゃくせい 不正アクセス|ふせいあくせす ハッシュ関数|はっしゅかんすう 改ざん検知|かいざんけんち ソーシャルエンジニアリング|そーしゃるえんじにありんぐ アクセス権限|あくせすけんげん バックアップを取る|ばっくあっぷをとる 情報漏えい|じょうほうろうえい デジタル証明書|でじたるしょうめいしょ 総当たり攻撃|そうあたりこうげき セキュリティパッチ|せきゅりてぃぱっち 最小権限の原則|さいしょうけんげんのげんそく ID|ID 生体認証|せいたいにんしょう ワンタイムパスワード|わんたいむぱすわーど なりすまし|なりすまし 標的型攻撃|ひょうてきがたこうげき スパムメール|すぱむめーる トロイの木馬|とろいのもくば ワーム|わーむ スパイウェア|すぱいうぇあ ゼロデイ攻撃|ぜろでいこうげき DoS攻撃|DoSこうげき SQLインジェクション|SQLいんじぇくしょん クロスサイトスクリプティング|くろすさいとすくりぷてぃんぐ 暗号鍵|あんごうかぎ 復号|ふくごう 情報セキュリティポリシー|じょうほうせきゅりてぃぽりしー 機密性|きみつせい 完全性|かんぜんせい 可用性|かようせい パスワードを使い回さない|ぱすわーどをつかいまわさない 不審なメールの添付を開かない|ふしんなめーるのてんぷをひらかない 二段階認証を設定する|にだんかいにんしょうをせっていする ソフトウェアを最新に更新する|そふとうぇあをさいしんにこうしんする 公開鍵で暗号化して送る|こうかいかぎであんごうかしておくる 秘密鍵は自分だけが持つ|ひみつかぎはじぶんだけがもつ 電子署名で改ざんを検知する|でんししょめいでかいざんをけんちする ウイルス対策ソフトを入れる|ういるすたいさくそふとをいれる 重要なデータをバックアップする|じゅうようなでーたをばっくあっぷする 公共の無線LANに注意する|こうきょうのむせんLANにちゅういする アクセス権限を最小にする|あくせすけんげんをさいしょうにする 個人情報を適切に管理する|こじんじょうほうをてきせつにかんりする 情報モラル|じょうほうもらる 著作権|ちょさくけん 肖像権|しょうぞうけん 個人情報保護|こじんじょうほうほご 迷惑メール|めいわくめーる 偽サイト|にせさいと 画面ロック|がめんろっく 指紋認証|しもんにんしょう 顔認証|かおにんしょう 暗号資産|あんごうしさん 不正ログイン|ふせいろぐいん パスワードを変更する|ぱすわーどをへんこうする 怪しいリンクを踏まない|あやしいりんくをふまない 端末を最新の状態に保つ|たんまつをさいしんのじょうたいにたもつ 被害にあったら相談する|ひがいにあったらそうだんする`},
   {name:'データ・AI',w:`人工知能|じんこうちのう 機械学習|きかいがくしゅう 深層学習|しんそうがくしゅう 教師あり学習|きょうしありがくしゅう 強化学習|きょうかがくしゅう ニューラルネットワーク|にゅーらるねっとわーく データベース|でーたべーす 主キー|しゅきー 正規化|せいきか 過学習|かがくしゅう 学習率|がくしゅうりつ 損失関数|そんしつかんすう 勾配降下法|こうばいこうかほう 特徴量|とくちょうりょう ビッグデータ|びっぐでーた データマイニング|でーたまいにんぐ 自然言語処理|しぜんげんごしょり 画像認識|がぞうにんしき 生成AI|せいせいAI 大規模言語モデル|だいきぼげんごもでる 訓練データ|くんれんでーた テストデータで評価する|てすとでーたでひょうかする クラスタリング|くらすたりんぐ 回帰と分類|かいきとぶんるい 外れ値|はずれち SQL文を実行する|SQLぶんをじっこうする 教師なし学習|きょうしなしがくしゅう 分類|ぶんるい 決定木|けっていぎ ランダムフォレスト|らんだむふぉれすと サポートベクターマシン|さぽーとべくたーましん 畳み込みニューラルネットワーク|たたみこみにゅーらるねっとわーく 活性化関数|かっせいかかんすう 誤差逆伝播法|ごさぎゃくでんぱほう バッチサイズ|ばっちさいず エポック数|えぽっくすう 正解率|せいかいりつ 適合率|てきごうりつ 再現率|さいげんりつ 次元削減|じげんさくげん 主成分分析|しゅせいぶんぶんせき 前処理|まえしょり 欠損値|けっそんち テーブル|てーぶる 外部キー|がいぶきー プロンプト|ぷろんぷと データを訓練用とテスト用に分ける|でーたをくんれんようとてすとようにわける 機械学習でモデルを訓練する|きかいがくしゅうでもでるをくんれんする 過学習を防ぐために正則化する|かがくしゅうをふせぐためにせいそくかする 学習率を小さくして調整する|がくしゅうりつをちいさくしてちょうせいする 損失関数の値を最小にする|そんしつかんすうのあたいをさいしょうにする ニューラルネットワークの層を重ねる|にゅーらるねっとわーくのそうをかさねる 画像から特徴量を取り出す|がぞうからとくちょうりょうをとりだす 生成AIが文章をつくる|せいせいAIがぶんしょうをつくる データベースから情報を検索する|でーたべーすからじょうほうをけんさくする 欠損値を平均値で補う|けっそんちをへいきんちでおぎなう 正解率でモデルを評価する|せいかいりつでもでるをひょうかする データを集計してグラフにする|でーたをしゅうけいしてぐらふにする データ分析|でーたぶんせき 統計処理|とうけいしょり 予測モデル|よそくもでる 推論|すいろん 学習データ|がくしゅうでーた 検証データ|けんしょうでーた ラベル付け|らべるづけ 音声認識|おんせいにんしき 機械翻訳|きかいほんやく 推薦システム|すいせんしすてむ 表計算ソフト|ひょうけいさんそふと グラフで傾向をつかむ|ぐらふでけいこうをつかむ データの偏りに注意する|でーたのかたよりにちゅういする AIに質問を入力する|AIにしつもんをにゅうりょくする 結果が正しいか確かめる|けっかがただしいかたしかめる`},
-  {name:'コンピュータの仕組み',w:`CPU|CPU メモリ|めもり 主記憶装置|しゅきおくそうち 補助記憶装置|ほじょきおくそうち キャッシュ|きゃっしゅ レジスタ|れじすた 入力装置|にゅうりょくそうち 出力装置|しゅつりょくそうち 論理回路|ろんりかいろ 半加算器|はんかさんき 二進数|にしんすう 十六進数|じゅうろくしんすう ビット|びっと バイト|ばいと クロック周波数|くろっくしゅうはすう オペレーティングシステム|おぺれーてぃんぐしすてむ 割り込み処理|わりこみしょり 仮想記憶|かそうきおく マルチコア|まるちこあ 論理積と論理和|ろんりせきとろんりわ 否定論理積|ひていろんりせき 1バイトは8ビット|1ばいとは8びっと フォンノイマン型|ふぉんのいまんがた 半導体|はんどうたい 集積回路|しゅうせきかいろ ムーアの法則|むーあのほうそく GPU|GPU ストレージ|すとれーじ SSD|SSD ハードディスク|はーどでぃすく マザーボード|まざーぼーど 電源ユニット|でんげんゆにっと 命令セット|めいれいせっと 機械語|きかいご アセンブリ言語|あせんぶりげんご 二進法|にしんほう 補数|ほすう 浮動小数点数|ふどうしょうすうてんすう 文字コード|もじこーど 排他的論理和|はいたてきろんりわ 全加算器|ぜんかさんき フリップフロップ|ふりっぷふろっぷ プロセス|ぷろせす スレッド|すれっど ファイルシステム|ふぁいるしすてむ デバイスドライバ|でばいすどらいば CPUが命令を順番に実行する|CPUがめいれいをじゅんばんにじっこうする メモリにデータを一時的に保存する|めもりにでーたをいちじてきにほぞんする 二進数を十進数に変換する|にしんすうをじゅっしんすうにへんかんする 十六進数で色を表す|じゅうろくしんすうでいろをあらわす 論理回路で足し算をする|ろんりかいろでたしざんをする キャッシュで処理を高速化する|きゃっしゅでしょりをこうそくかする OSがハードウェアを管理する|OSがはーどうぇあをかんりする 複数のプログラムを同時に動かす|ふくすうのぷろぐらむをどうじにうごかす 補助記憶装置にファイルを保存|ほじょきおくそうちにふぁいるをほぞん 文字を文字コードで表す|もじをもじこーどであらわす 半導体の集積度が上がる|はんどうたいのしゅうせきどがあがる クロック周波数が高いほど速い|くろっくしゅうはすうがたかいほどはやい 電源を入れる|でんげんをいれる 再起動|さいきどう 起動時間|きどうじかん 記憶容量|きおくようりょう 処理速度|しょりそくど 周辺機器|しゅうへんきき プリンター|ぷりんたー スキャナー|すきゃなー タッチパネル|たっちぱねる キーボード|きーぼーど マウス|まうす 圧縮ファイル|あっしゅくふぁいる 拡張子|かくちょうし ファイルを保存する|ふぁいるをほぞんする フォルダを整理する|ふぉるだをせいりする`}
+  {name:'コンピュータの仕組み',w:`CPU|CPU メモリ|めもり 主記憶装置|しゅきおくそうち 補助記憶装置|ほじょきおくそうち キャッシュ|きゃっしゅ レジスタ|れじすた 入力装置|にゅうりょくそうち 出力装置|しゅつりょくそうち 論理回路|ろんりかいろ 半加算器|はんかさんき 二進数|にしんすう 十六進数|じゅうろくしんすう ビット|びっと バイト|ばいと クロック周波数|くろっくしゅうはすう オペレーティングシステム|おぺれーてぃんぐしすてむ 割り込み処理|わりこみしょり 仮想記憶|かそうきおく マルチコア|まるちこあ 論理積と論理和|ろんりせきとろんりわ 否定論理積|ひていろんりせき 1バイトは8ビット|1ばいとは8びっと フォンノイマン型|ふぉんのいまんがた 半導体|はんどうたい 集積回路|しゅうせきかいろ ムーアの法則|むーあのほうそく GPU|GPU ストレージ|すとれーじ SSD|SSD ハードディスク|はーどでぃすく マザーボード|まざーぼーど 電源ユニット|でんげんゆにっと 命令セット|めいれいせっと 機械語|きかいご アセンブリ言語|あせんぶりげんご 二進法|にしんほう 補数|ほすう 浮動小数点数|ふどうしょうすうてんすう 文字コード|もじこーど 排他的論理和|はいたてきろんりわ 全加算器|ぜんかさんき フリップフロップ|ふりっぷふろっぷ プロセス|ぷろせす スレッド|すれっど ファイルシステム|ふぁいるしすてむ デバイスドライバ|でばいすどらいば CPUが命令を順番に実行する|CPUがめいれいをじゅんばんにじっこうする メモリにデータを一時的に保存する|めもりにでーたをいちじてきにほぞんする 二進数を十進数に変換する|にしんすうをじゅっしんすうにへんかんする 十六進数で色を表す|じゅうろくしんすうでいろをあらわす 論理回路で足し算をする|ろんりかいろでたしざんをする キャッシュで処理を高速化する|きゃっしゅでしょりをこうそくかする OSがハードウェアを管理する|OSがはーどうぇあをかんりする 複数のプログラムを同時に動かす|ふくすうのぷろぐらむをどうじにうごかす 補助記憶装置にファイルを保存|ほじょきおくそうちにふぁいるをほぞん 文字を文字コードで表す|もじをもじこーどであらわす 半導体の集積度が上がる|はんどうたいのしゅうせきどがあがる クロック周波数が高いほど速い|くろっくしゅうはすうがたかいほどはやい 電源を入れる|でんげんをいれる 再起動|さいきどう 起動時間|きどうじかん 記憶容量|きおくようりょう 処理速度|しょりそくど 周辺機器|しゅうへんきき プリンター|ぷりんたー スキャナー|すきゃなー タッチパネル|たっちぱねる キーボード|きーぼーど マウス|まうす 圧縮ファイル|あっしゅくふぁいる 拡張子|かくちょうし ファイルを保存する|ふぁいるをほぞんする フォルダを整理する|ふぉるだをせいりする`},
+  {name:'英語の用語・コード',e:`computer|コンピュータ
+keyboard|キーボード
+password|パスワード
+download|ダウンロード
+software|ソフトウェア
+hardware|ハードウェア
+database|データベース
+network|ネットワーク
+algorithm|アルゴリズム
+variable|変数
+function|関数
+array|配列
+string|文字列
+boolean|真偽値
+integer|整数
+for loop|forループ
+debug|デバッグする
+compile|コンパイルする
+syntax error|構文エラー
+return value|戻り値
+open source|オープンソース
+artificial intelligence|人工知能
+machine learning|機械学習
+cloud computing|クラウドコンピューティング
+user interface|ユーザーインターフェース
+null pointer|ヌルポインタ
+Hello, World!|最初に表示するおなじみの文
+print("Hello")|Pythonで文字を表示
+console.log(x);|JavaScriptで値を表示
+let x = 10;|変数の宣言（JavaScript）
+const PI = 3.14;|定数の宣言（JavaScript）
+if (a > b) {|条件分岐の書き出し
+return true;|trueを返す
+while (i < 10)|whileループ
+for i in range(10):|Pythonのforループ
+def add(a, b):|Pythonの関数定義
+import numpy as np|ライブラリの読み込み（Python）
+x += 1;|xに1を足す
+arr[0]|配列の先頭の要素
+git commit -m "fix"|変更を記録する（Git）
+git push origin main|リモートに送る（Git）
+npm install|パッケージを入れる（Node.js）
+SELECT * FROM users;|全件を取得する（SQL）
+<div class="box">|div要素（HTML）
+#include <stdio.h>|ヘッダの読み込み（C言語）
+public static void main|main関数の宣言（Java）
+browser|ブラウザ
+website|ウェブサイト
+server|サーバー
+client|クライアント
+router|ルーター
+firewall|ファイアウォール
+encryption|暗号化
+bandwidth|帯域幅
+operating system|オペレーティングシステム
+source code|ソースコード
+compiler|コンパイラ
+library|ライブラリ
+framework|フレームワーク
+repository|リポジトリ
+pull request|プルリクエスト
+merge conflict|マージの衝突
+unit test|単体テスト
+bug fix|バグ修正
+class|クラス
+object|オブジェクト
+method|メソッド
+parameter|引数
+recursion|再帰
+exception|例外
+deep learning|深層学習
+neural network|ニューラルネットワーク
+big data|ビッグデータ
+let i = 0;|変数iを0で初期化
+i++;|iを1増やす
+x = x * 2;|xを2倍にする
+a == b|aとbが等しいか比較
+a != b|aとbが等しくないか比較
+} else {|条件分岐のelse
+break;|ループを抜ける
+continue;|次の繰り返しへ進む
+return x + y;|x+yを返す
+function add(a, b) {|関数の定義（JavaScript）
+list.append(x)|リストに追加（Python）
+len(list)|リストの長さ（Python）
+class Dog:|クラスの定義（Python）
+self.name = name|インスタンス変数に代入
+try:|例外処理の開始（Python）
+except Exception:|例外を受け取る（Python）
+int main(void)|main関数（C言語）
+printf("%d", x);|整数を表示（C言語）
+System.out.println();|文字を表示（Java）
+document.getElementById|要素の取得（JavaScript）
+git status|状態を確認（Git）
+git add .|変更をステージ（Git）
+git pull|リモートから取り込む（Git）
+cd ..|一つ上のフォルダへ移動
+ls -la|ファイル一覧を表示
+pip install requests|パッケージを入れる（Python）
+CREATE TABLE users|テーブルを作る（SQL）
+WHERE id = 1;|条件を指定（SQL）
+<a href="#">|リンク要素（HTML）
+color: red;|文字色を赤に（CSS）
+for (let i = 0; i < 10; i++) {|10回繰り返すforループ（JavaScript）
+const result = add(2, 3);|関数の結果を定数に入れる
+if (score >= 80) { pass(); }|80点以上なら合格の処理
+while (count < max) count++;|maxまでカウントを増やす
+def greet(name): return name|名前を返す関数（Python）
+numbers = [1, 2, 3, 4, 5]|リストを作る（Python）
+for item in items: print(item)|要素を順に表示（Python）
+SELECT name FROM users WHERE id = 1;|条件で名前を取得（SQL）
+git checkout -b feature|新しいブランチを作る（Git）
+git clone https://example.com|リポジトリを複製（Git）
+public class Main { }|クラスの宣言（Java）
+import pandas as pd|ライブラリの読み込み（Python）`}
  ]}
  ,{id:'eng',name:'英語',glyph:'英',en:'ENGLISH',cats:[
   {name:'TOEIC',e:`invoice|請求書
@@ -924,122 +1039,7 @@ Where do you live?|どこに住んでいますか？
 How old are you?|何歳ですか？
 I have a cold.|風邪をひいています。
 It's raining today.|今日は雨です。
-Let's go shopping.|買い物に行こう。`},
-  {name:'情報',e:`computer|コンピュータ
-keyboard|キーボード
-password|パスワード
-download|ダウンロード
-software|ソフトウェア
-hardware|ハードウェア
-database|データベース
-network|ネットワーク
-algorithm|アルゴリズム
-variable|変数
-function|関数
-array|配列
-string|文字列
-boolean|真偽値
-integer|整数
-for loop|forループ
-debug|デバッグする
-compile|コンパイルする
-syntax error|構文エラー
-return value|戻り値
-open source|オープンソース
-artificial intelligence|人工知能
-machine learning|機械学習
-cloud computing|クラウドコンピューティング
-user interface|ユーザーインターフェース
-null pointer|ヌルポインタ
-Hello, World!|最初に表示するおなじみの文
-print("Hello")|Pythonで文字を表示
-console.log(x);|JavaScriptで値を表示
-let x = 10;|変数の宣言（JavaScript）
-const PI = 3.14;|定数の宣言（JavaScript）
-if (a > b) {|条件分岐の書き出し
-return true;|trueを返す
-while (i < 10)|whileループ
-for i in range(10):|Pythonのforループ
-def add(a, b):|Pythonの関数定義
-import numpy as np|ライブラリの読み込み（Python）
-x += 1;|xに1を足す
-arr[0]|配列の先頭の要素
-git commit -m "fix"|変更を記録する（Git）
-git push origin main|リモートに送る（Git）
-npm install|パッケージを入れる（Node.js）
-SELECT * FROM users;|全件を取得する（SQL）
-<div class="box">|div要素（HTML）
-#include <stdio.h>|ヘッダの読み込み（C言語）
-public static void main|main関数の宣言（Java）
-browser|ブラウザ
-website|ウェブサイト
-server|サーバー
-client|クライアント
-router|ルーター
-firewall|ファイアウォール
-encryption|暗号化
-bandwidth|帯域幅
-operating system|オペレーティングシステム
-source code|ソースコード
-compiler|コンパイラ
-library|ライブラリ
-framework|フレームワーク
-repository|リポジトリ
-pull request|プルリクエスト
-merge conflict|マージの衝突
-unit test|単体テスト
-bug fix|バグ修正
-class|クラス
-object|オブジェクト
-method|メソッド
-parameter|引数
-recursion|再帰
-exception|例外
-deep learning|深層学習
-neural network|ニューラルネットワーク
-big data|ビッグデータ
-let i = 0;|変数iを0で初期化
-i++;|iを1増やす
-x = x * 2;|xを2倍にする
-a == b|aとbが等しいか比較
-a != b|aとbが等しくないか比較
-} else {|条件分岐のelse
-break;|ループを抜ける
-continue;|次の繰り返しへ進む
-return x + y;|x+yを返す
-function add(a, b) {|関数の定義（JavaScript）
-list.append(x)|リストに追加（Python）
-len(list)|リストの長さ（Python）
-class Dog:|クラスの定義（Python）
-self.name = name|インスタンス変数に代入
-try:|例外処理の開始（Python）
-except Exception:|例外を受け取る（Python）
-int main(void)|main関数（C言語）
-printf("%d", x);|整数を表示（C言語）
-System.out.println();|文字を表示（Java）
-document.getElementById|要素の取得（JavaScript）
-git status|状態を確認（Git）
-git add .|変更をステージ（Git）
-git pull|リモートから取り込む（Git）
-cd ..|一つ上のフォルダへ移動
-ls -la|ファイル一覧を表示
-pip install requests|パッケージを入れる（Python）
-CREATE TABLE users|テーブルを作る（SQL）
-WHERE id = 1;|条件を指定（SQL）
-<a href="#">|リンク要素（HTML）
-color: red;|文字色を赤に（CSS）
-for (let i = 0; i < 10; i++) {|10回繰り返すforループ（JavaScript）
-const result = add(2, 3);|関数の結果を定数に入れる
-if (score >= 80) { pass(); }|80点以上なら合格の処理
-while (count < max) count++;|maxまでカウントを増やす
-def greet(name): return name|名前を返す関数（Python）
-numbers = [1, 2, 3, 4, 5]|リストを作る（Python）
-for item in items: print(item)|要素を順に表示（Python）
-SELECT name FROM users WHERE id = 1;|条件で名前を取得（SQL）
-git checkout -b feature|新しいブランチを作る（Git）
-git clone https://example.com|リポジトリを複製（Git）
-public class Main { }|クラスの宣言（Java）
-import pandas as pd|ライブラリの読み込み（Python）`}
+Let's go shopping.|買い物に行こう。`}
  ]}
 ];
 // 英語は「英文|日本語訳」を1行ずつ。英文をそのまま打つ（スペースも入力）。2文字をかな1字ぶんとしてレベル判定。
@@ -1126,6 +1126,8 @@ const RANKS=[{min:4.5,r:'S',t:'教授級'},{min:3.5,r:'A',t:'准教授級'},{min
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
 const S=Object.assign({stage:'math',cats:null,level:1,minutes:1,limit:'normal',custom:.5,mode:'normal',show:{hira:true,kanji:true,kata:false,roma:true},sound:true,vol:.8,theme:'auto',accent:'blue',input:'roma',name:''},store.get('yougoda-settings',{}));
 const stageOf=id=>STAGES.find(s=>s.id===id)||STAGES[0];
+// 保存されたカテゴリのうち、今の科目に無いもの（カテゴリの移動・削除で消えたもの）は外す
+if(Array.isArray(S.cats)){const ids=new Set(stageOf(S.stage).cats.map(c=>c.id));S.cats=S.cats.filter(id=>ids.has(id));}
 if(!Array.isArray(S.cats)||!S.cats.length) S.cats=stageOf(S.stage).cats.map(c=>c.id);
 const save=()=>store.set('yougoda-settings',S);
 const $=id=>document.getElementById(id);
@@ -1168,7 +1170,7 @@ function renderSetup(){
  $('catAll').onclick=()=>{S.cats=allOn?[]:st.cats.map(c=>c.id);renderSetup();};
 
 
- $('levelHint').hidden=S.stage!=='eng'&&S.stage!=='all';
+ $('levelHint').hidden=!['eng','info','all'].includes(S.stage);
  $('inputNow').textContent=`入力方法: ${S.input==='kana'?'かな（フリック入力）':'ローマ字'}（「設定」で変更）`;
  segment($('levels'),LEVELS.map(l=>({v:l.v,html:`${l.label}<small>${l.sub}</small>`})),S.level,v=>S.level=v);
  segment($('times'),TIMES.map(t=>({v:t,html:`${t}分`})),S.minutes,v=>S.minutes=v);
@@ -1188,7 +1190,7 @@ function renderSetup(){
  });
 
  const pool=buildPool();
- $('poolInfo').innerHTML=pool.length?`${st.name} / ${L.label} の出題候補 <b>${pool.length}</b> 問`:(S.input==='kana'&&S.stage==='eng'?'英語はローマ字入力で遊んでください（入力方法をローマ字に）。':'選んだ条件に合う問題がありません。カテゴリを1つ以上選んでください。');
+ $('poolInfo').innerHTML=pool.length?`${st.name} / ${L.label} の出題候補 <b>${pool.length}</b> 問`:(S.input==='kana'&&stageOf(S.stage).cats.filter(c=>S.cats.includes(c.id)).some(c=>c.e)?'選んだカテゴリは英語の問題なので、かな入力では出題されません。「設定」で入力方法をローマ字にしてください。':'選んだ条件に合う問題がありません。カテゴリを1つ以上選んでください。');
  $('startBtn').disabled=!pool.length;
  const best=store.get(bestKey(),null);
  $('bestInfo').innerHTML=best?`この条件の自己ベスト <b>${best}</b> 点`:'この条件の自己ベストはまだありません';
